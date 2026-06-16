@@ -1268,6 +1268,9 @@
       <!-- .onion engines — visible only when Tor is active -->
       <div class="onion-section" id="onionSection">
         <div class="onion-section-title">🧅 Rede .onion</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.5;">
+          O Tor serve para <strong style="color:var(--text-muted)">duas coisas</strong>: bypassar bloqueios de scraping nas engines normais (trocando seu IP) e pesquisar diretamente na dark web usando as engines abaixo.
+        </div>
         <div class="onion-pills" id="onionPills">
           {% for eng in onion_engines %}
           <div class="onion-pill" data-slug="{{ eng.slug }}">🧅 {{ eng.name }}</div>
@@ -1497,10 +1500,10 @@
       torPill.classList.toggle('tor-unavailable', !available && !on);
       torPill.classList.toggle('tor-on', on);
       torPill.title = on
-        ? 'Tor ativo — clique para desativar'
+        ? 'Tor ativo — bypass de anti-scraping + acesso à rede .onion. Clique para desativar.'
         : available
-          ? 'Tor disponível — clique para ativar'
-          : 'Clique para configurar o Tor';
+          ? 'Tor disponível — ativa bypass por IP e pesquisa na rede .onion. Clique para ativar.'
+          : 'Tor não detectado — clique para configurar. Permite bypass de bloqueios e busca na dark web.';
       torLabel.textContent = on ? 'Tor ON' : 'Tor';
       if (error) statusBar.textContent = '⚠️ ' + error;
       if (onionSection) onionSection.classList.toggle('visible', on);
