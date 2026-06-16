@@ -1,13 +1,17 @@
-from bs4 import BeautifulSoup
+import random
 from typing import List
 from .base import BaseSearcher, SearchResult
 from ..http_client import request_with_retry
 
-# Public SearXNG instances — tried in order, first successful one is used
+# Public SearXNG instances — shuffled each search for load distribution
 _INSTANCES = [
     "https://searx.be",
     "https://search.bus-hit.me",
     "https://searxng.world",
+    "https://searx.tiekoetter.com",
+    "https://search.sapti.me",
+    "https://searx.prvcy.eu",
+    "https://searx.fmac.xyz",
 ]
 
 
@@ -19,13 +23,16 @@ class SearXSearcher(BaseSearcher):
 
     def search(self, query: str, max_results: int = 20) -> List[SearchResult]:
         results = []
-        for base in _INSTANCES:
+        instances = _INSTANCES.copy()
+        random.shuffle(instances)
+        for base in instances:
             try:
                 resp = request_with_retry(
                     "GET",
                     f"{base}/search",
                     params={"q": query, "format": "json", "categories": "general"},
                     extra_headers={"Referer": base + "/"},
+                    timeout=8,
                 )
                 if resp is None or resp.status_code != 200:
                     continue

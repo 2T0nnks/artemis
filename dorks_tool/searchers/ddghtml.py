@@ -1,7 +1,22 @@
 from bs4 import BeautifulSoup
+from urllib.parse import urlparse, parse_qs, unquote
 from typing import List
 from .base import BaseSearcher, SearchResult
 from ..http_client import request_with_retry
+
+
+def _clean_ddg_url(href: str) -> str:
+    """Unwrap DDG redirect URLs like /l/?uddg=https%3A%2F%2F..."""
+    if href.startswith("/l/") or "duckduckgo.com/l/" in href:
+        try:
+            qs = parse_qs(urlparse(href).query)
+            if "uddg" in qs:
+                return unquote(qs["uddg"][0])
+            if "kh" in qs:
+                return unquote(qs["kh"][0])
+        except Exception:
+            pass
+    return href
 
 
 class DDGHTMLSearcher(BaseSearcher):
@@ -28,18 +43,15 @@ class DDGHTMLSearcher(BaseSearcher):
             for result in soup.select(".result")[:max_results]:
                 a = result.select_one(".result__title a, .result__a")
                 snippet_el = result.select_one(".result__snippet")
-                url_el = result.select_one(".result__url")
                 if not a:
                     continue
-                href = a.get("href", "")
-                if not href or "duckduckgo.com" in href:
+                href = _clean_ddg_url(a.get("href", ""))
+                if not href or not href.startswith("http") or "duckduckgo.com" in href:
                     continue
-                title = a.get_text(strip=True)
-                snippet = snippet_el.get_text(strip=True) if snippet_el else ""
                 results.append(SearchResult(
-                    title=title,
+                    title=a.get_text(strip=True),
                     url=href,
-                    snippet=snippet,
+                    snippet=snippet_el.get_text(strip=True) if snippet_el else "",
                     engine=self.name,
                 ))
         except Exception:

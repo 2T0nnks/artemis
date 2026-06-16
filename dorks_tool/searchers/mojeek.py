@@ -16,7 +16,7 @@ class MojeekSearcher(BaseSearcher):
             resp = request_with_retry(
                 "GET",
                 "https://www.mojeek.com/search",
-                params={"q": query, "si": "web"},
+                params={"q": query, "si": "web", "fmt": max_results, "qr": "1"},
                 extra_headers={"Referer": "https://www.mojeek.com/"},
             )
             if resp is None or resp.status_code >= 400:

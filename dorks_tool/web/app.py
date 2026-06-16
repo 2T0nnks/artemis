@@ -65,8 +65,9 @@ def create_app():
         title = (data.get("title") or "").strip()
         formats = data.get("formats") or None
         excludes = data.get("excludes") or None
+        extra_operators = (data.get("extra_operators") or "").strip() or None
 
-        dork = build_dork(category, title, formats=formats, excludes=excludes)
+        dork = build_dork(category, title, formats=formats, excludes=excludes, extra_operators=extra_operators)
         return jsonify({"dork": dork})
 
     @app.route("/api/inspect", methods=["POST"])

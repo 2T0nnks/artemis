@@ -12,13 +12,13 @@ from .ecosia import EcosiaSearcher
 ALL_SEARCHERS = [
     DDGHTMLSearcher(),
     BingSearcher(),
-    BraveHTMLSearcher(),
     BingGlobalSearcher(),
     StartpageSearcher(),
     DuckDuckGoSearcher(),
     SearXSearcher(),
     MojeekSearcher(),
     EcosiaSearcher(),
+    BraveHTMLSearcher(),
     BraveSearcher(),
 ]
 

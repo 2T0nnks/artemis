@@ -1164,6 +1164,10 @@
           <input class="form-input" id="advExcludes" type="text" placeholder="amazon.com, goodreads.com" />
         </div>
         <div class="form-group full">
+          <label class="form-label">Operadores extras</label>
+          <input class="form-input" id="advExtraOps" type="text" placeholder="site:gov.br  before:2024  intext:confidencial" />
+        </div>
+        <div class="form-group full">
           <label class="form-label">Formatos</label>
           <div class="format-chips" id="formatChips"></div>
         </div>
@@ -1292,6 +1296,7 @@
     const advancedForm    = document.getElementById('advancedForm');
     const formatChips     = document.getElementById('formatChips');
     const advExcludes     = document.getElementById('advExcludes');
+    const advExtraOps     = document.getElementById('advExtraOps');
 
     /* ══════════════════════════════════════════
        CATEGORY SELECTION
@@ -1357,6 +1362,22 @@
         .filter(Boolean);
     }
 
+    function getExtraOps() {
+      return advExtraOps ? advExtraOps.value.trim() : '';
+    }
+
+    function colorDork(dork) {
+      const operatorRx = /(\-?(?:site|inurl|intitle|intext|filetype|before|after|ext|cache):[\S]+|"[^"]+"|-\S+)/g;
+      return dork.replace(operatorRx, tok => {
+        if (tok.startsWith('"')) return `<span style="color:#34d399">${tok}</span>`;
+        if (tok.startsWith('-')) return `<span style="color:#f87171">${tok}</span>`;
+        const [key] = tok.split(':');
+        const colors = {site:'#60a5fa',inurl:'#a78bfa',intitle:'#f59e0b',intext:'#fb923c',filetype:'#e879f9',before:'#94a3b8',after:'#94a3b8',ext:'#e879f9',cache:'#94a3b8'};
+        const col = colors[key] || '#a78bfa';
+        return `<span style="color:${col}">${tok}</span>`;
+      });
+    }
+
     async function updateDorkPreview() {
       if (currentCategory === 'free') return;
       const title = searchInput.value.trim();
@@ -1370,13 +1391,14 @@
           title,
           formats: getActiveFormats(),
           excludes: getExcludes(),
+          extra_operators: getExtraOps(),
         }),
       }).catch(() => null);
 
       if (!resp) return;
       const data = await resp.json();
       if (data.dork) {
-        dorkPreviewCode.textContent = data.dork;
+        dorkPreviewCode.innerHTML = colorDork(data.dork);
         dorkPreview.style.display = 'flex';
       }
     }
@@ -1386,6 +1408,7 @@
     });
 
     advExcludes.addEventListener('input', updateDorkPreview);
+    if (advExtraOps) advExtraOps.addEventListener('input', updateDorkPreview);
 
     /* ══════════════════════════════════════════
        ENGINE PILLS
@@ -1683,6 +1706,7 @@
           title,
           formats: getActiveFormats(),
           excludes: getExcludes(),
+          extra_operators: getExtraOps(),
         }),
       }).catch(() => null);
       if (!resp) return title;

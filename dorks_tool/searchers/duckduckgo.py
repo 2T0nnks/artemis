@@ -1,4 +1,5 @@
 from typing import List
+from duckduckgo_search import DDGS
 from .base import BaseSearcher, SearchResult
 
 
@@ -9,7 +10,6 @@ class DuckDuckGoSearcher(BaseSearcher):
 
     def search(self, query: str, max_results: int = 20) -> List[SearchResult]:
         try:
-            from duckduckgo_search import DDGS
             results = []
             with DDGS() as ddgs:
                 for r in ddgs.text(query, max_results=max_results, backend='html'):

@@ -13,10 +13,10 @@ CATEGORIES = [
 FORMATS_BY_CATEGORY = {
     "book":    ["pdf", "epub", "mobi", "djvu"],
     "manga":   ["cbz", "cbr", "pdf", "zip"],
-    "movie":   ["mkv", "mp4", "avi", "1080p", "720p"],
-    "music":   ["mp3", "flac", "wav", "ogg"],
-    "course":  ["pdf", "mp4", "zip"],
-    "software":["exe", "zip", "iso", "dmg"],
+    "movie":   ["mkv", "mp4", "avi", "1080p", "720p", "4k"],
+    "music":   ["mp3", "flac", "wav", "ogg", "aac"],
+    "course":  ["pdf", "mp4", "zip", "inurl:torrent"],
+    "software":["exe", "zip", "iso", "dmg", "inurl:download", "inurl:release"],
     "free":    [],
 }
 
@@ -41,18 +41,25 @@ EXCLUDE_DEFAULTS = {
 }
 
 
+_INLINE_OPERATORS = {"inurl:", "intitle:", "intext:", "site:", "filetype:", "before:", "after:"}
+
+
 def build_dork(
     category: str,
     title: str,
     formats: Optional[List[str]] = None,
     excludes: Optional[List[str]] = None,
+    extra_operators: Optional[str] = None,
 ) -> str:
     title = title.strip()
     if not title:
         return ""
 
     if category == "free":
-        return title
+        base = title
+        if extra_operators:
+            base = base + " " + extra_operators.strip()
+        return base
 
     if formats is None:
         formats = FORMATS_BY_CATEGORY.get(category, [])
@@ -63,12 +70,15 @@ def build_dork(
     parts = [f'intitle:"{title}"']
 
     if formats:
-        if category in ("movie", "music") and any(f in ("1080p", "720p") for f in formats):
-            ext_formats = [f for f in formats if f not in ("1080p", "720p")]
-            res_formats = [f for f in formats if f in ("1080p", "720p")]
-            ft_parts = [f"filetype:{f}" for f in ext_formats] + res_formats
+        inline = [f for f in formats if any(f.startswith(op) for op in _INLINE_OPERATORS)]
+        ext_formats = [f for f in formats if f not in inline]
+
+        if category in ("movie", "music"):
+            res = [f for f in ext_formats if f in ("1080p", "720p", "4k")]
+            ext_formats = [f for f in ext_formats if f not in res]
+            ft_parts = [f"filetype:{f}" for f in ext_formats] + res + inline
         else:
-            ft_parts = [f"filetype:{f}" for f in formats]
+            ft_parts = [f"filetype:{f}" for f in ext_formats] + inline
 
         if ft_parts:
             if len(ft_parts) == 1:
@@ -78,6 +88,9 @@ def build_dork(
 
     for site in excludes:
         parts.append(f"-site:{site}")
+
+    if extra_operators:
+        parts.append(extra_operators.strip())
 
     return " ".join(parts)
 

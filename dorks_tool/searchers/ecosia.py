@@ -22,9 +22,21 @@ class EcosiaSearcher(BaseSearcher):
             if resp is None or resp.status_code >= 400:
                 return results
             soup = BeautifulSoup(resp.text, "lxml")
-            for article in soup.select("article.result, div.result__body, .mainline-results article")[:max_results]:
-                a = article.select_one("a.result__link, a[data-test-id='mainline-result-title-link'], h2 a")
-                snippet_el = article.select_one(".result__description, p")
+            candidates = (
+                soup.select("[data-test-id='web-result']") or
+                soup.select("article.result") or
+                soup.select(".mainline-results article") or
+                soup.select("div[class*='result']") or
+                soup.select("li[class*='result']")
+            )
+            for article in candidates[:max_results]:
+                a = (
+                    article.select_one("a[data-test-id='mainline-result-title-link']") or
+                    article.select_one("a.result__link") or
+                    article.select_one("h2 a, h3 a") or
+                    article.select_one("a[href^='http']")
+                )
+                snippet_el = article.select_one(".result__description, [data-test-id='result-description'], p")
                 if not a or not a.get("href"):
                     continue
                 href = a["href"]
