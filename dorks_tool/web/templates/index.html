@@ -743,6 +743,9 @@
       animation: fadein 0.18s ease;
     }
 
+    /* torModeSection always visible when panel is open */
+    #torAdvPanel.open #torModeSection { display: block; }
+
     .tor-adv-title {
       font-size: 12px; font-weight: 600;
       color: var(--text-muted); letter-spacing: 0.6px;
@@ -1404,12 +1407,12 @@
 
       <!-- Tor usage mode (visible when Tor is active) -->
       <div class="onion-section" id="torModeSection" style="margin-top:14px;">
-        <div class="onion-section-title" style="margin-bottom:8px;">Modo de uso do Tor</div>
+        <div class="onion-section-title" id="torModeTitle" style="margin-bottom:8px;">Modo de uso do Tor</div>
         <div class="onion-mode-row">
-          <label class="onion-mode-label">
+          <label class="onion-mode-label" id="torModeLabelBypass">
             <input type="radio" name="torMode" value="bypass" checked /> 🛡 Só bypass (anti-scraping)
           </label>
-          <label class="onion-mode-label">
+          <label class="onion-mode-label" id="torModeLabelDarkweb">
             <input type="radio" name="torMode" value="darkweb" /> 🧅 Bypass + Dark web
           </label>
         </div>
@@ -1420,8 +1423,8 @@
 
       <!-- .onion engines — visible only when Tor is active AND dark web mode is selected -->
       <div class="onion-section" id="onionSection">
-        <div class="onion-section-title">🧅 Engines da rede .onion</div>
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.5;">
+        <div class="onion-section-title" id="onionSectionTitle">🧅 Engines da rede .onion</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.5;" id="onionSectionDesc">
           Pesquisa diretamente na dark web. As engines abaixo só funcionam via rede Tor.
         </div>
         <div class="onion-pills" id="onionPills">
@@ -1430,10 +1433,10 @@
           {% endfor %}
         </div>
         <div class="onion-mode-row">
-          <label class="onion-mode-label">
+          <label class="onion-mode-label" id="onionModeLabelHybrid">
             <input type="radio" name="onionMode" value="hybrid" checked /> Surface + Onion
           </label>
-          <label class="onion-mode-label">
+          <label class="onion-mode-label" id="onionModeLabelOnly">
             <input type="radio" name="onionMode" value="only" /> Só .onion
           </label>
         </div>
@@ -1689,7 +1692,7 @@
     document.querySelectorAll('input[name="torMode"]').forEach(r => {
       r.addEventListener('change', () => {
         const isDarkWeb = r.value === 'darkweb';
-        if (onionSection) onionSection.classList.toggle('visible', isDarkWeb);
+        if (onionSection) onionSection.classList.toggle('visible', torOn && isDarkWeb);
         if (torModeHint) torModeHint.textContent = isDarkWeb
           ? 'Roteia todas as engines pelo Tor e habilita busca nas engines .onion abaixo.'
           : 'Roteia engines normais pelo Tor para trocar de IP e evitar bloqueios.';
@@ -1868,12 +1871,17 @@
     }
 
     torGearBtn.addEventListener('click', () => {
-      const open = torAdvPanel.style.display === 'block';
+      const open = torAdvPanel.classList.contains('open');
+      torAdvPanel.classList.toggle('open', !open);
       torAdvPanel.style.display = open ? 'none' : 'block';
       torGearBtn.classList.toggle('active', !open);
       if (!open) {
         advLog.style.display = 'none';
         loadAdvStatus();
+      } else {
+        if (torModeSection) torModeSection.classList.toggle('visible', torOn);
+        const isDarkWeb = document.querySelector('input[name="torMode"]:checked')?.value === 'darkweb';
+        if (onionSection) onionSection.classList.toggle('visible', torOn && isDarkWeb);
       }
     });
 
@@ -2823,9 +2831,15 @@
         tor_stop_btn: '⏹ Parar',
         tor_renew_btn: '↺ Renovar circuito agora',
         tor_install_btn: '⬇ Instalar bundle',
-        onion_title: '🧅 Rede .onion',
+        onion_title: '🧅 Engines da rede .onion',
+        onion_desc: 'Pesquisa diretamente na dark web. As engines abaixo só funcionam via rede Tor.',
         onion_mode_hybrid: 'Surface + Onion',
         onion_mode_only: 'Só .onion',
+        tor_mode_title: 'Modo de uso do Tor',
+        tor_mode_bypass: '🛡 Só bypass (anti-scraping)',
+        tor_mode_darkweb: '🧅 Bypass + Dark web',
+        tor_mode_hint_bypass: 'Roteia engines normais pelo Tor para trocar de IP e evitar bloqueios.',
+        tor_mode_hint_darkweb: 'Roteia todas as engines pelo Tor e habilita busca nas engines .onion abaixo.',
         filter_all: 'Todos',
         filter_onion: 'Só Onion',
       },
@@ -2886,8 +2900,14 @@
         tor_renew_btn: '↺ Renew circuit now',
         tor_install_btn: '⬇ Install bundle',
         onion_title: '🧅 .onion Network',
+        onion_desc: 'Searches directly on the dark web. The engines below only work via the Tor network.',
         onion_mode_hybrid: 'Surface + Onion',
         onion_mode_only: '.onion only',
+        tor_mode_title: 'Tor usage mode',
+        tor_mode_bypass: '🛡 Bypass only (anti-scraping)',
+        tor_mode_darkweb: '🧅 Bypass + Dark web',
+        tor_mode_hint_bypass: 'Routes normal engines through Tor to rotate IP and avoid blocks.',
+        tor_mode_hint_darkweb: 'Routes all engines through Tor and enables .onion dark web search below.',
         filter_all: 'All',
         filter_onion: 'Onion only',
       },
@@ -2948,8 +2968,14 @@
         tor_renew_btn: '↺ Renovar circuito ahora',
         tor_install_btn: '⬇ Instalar bundle',
         onion_title: '🧅 Red .onion',
+        onion_desc: 'Busca directamente en la dark web. Los motores de abajo solo funcionan vía la red Tor.',
         onion_mode_hybrid: 'Surface + Onion',
         onion_mode_only: 'Solo .onion',
+        tor_mode_title: 'Modo de uso de Tor',
+        tor_mode_bypass: '🛡 Solo bypass (anti-scraping)',
+        tor_mode_darkweb: '🧅 Bypass + Dark web',
+        tor_mode_hint_bypass: 'Enruta motores normales por Tor para rotar IP y evitar bloqueos.',
+        tor_mode_hint_darkweb: 'Enruta todos los motores por Tor y habilita la búsqueda .onion abajo.',
         filter_all: 'Todos',
         filter_onion: 'Solo Onion',
       }
@@ -3007,45 +3033,39 @@
     }
 
     function _applyTorLabels(T) {
-      const map = {
-        '.tor-adv-title': 'tor_adv_title',
-      };
-      Object.entries(map).forEach(([sel, key]) => {
-        const el = document.querySelector(sel);
-        if (el && T[key]) el.textContent = T[key];
-      });
-      const labels = [
-        ['tor_stat_status', 0], ['tor_stat_port', 1],
-        ['tor_stat_bundle', 2], ['tor_stat_managed', 3]
-      ];
+      const byId = (id, key) => { const el = document.getElementById(id); if (el && T[key]) el.textContent = T[key]; };
+
+      byId('advSaveBtn',   'tor_save_btn');
+      byId('advStartBtn',  'tor_start_btn');
+      byId('advStopBtn',   'tor_stop_btn');
+      byId('advRefreshBtn','tor_refresh_btn');
+
       const statLabels = document.querySelectorAll('.tor-stat-label');
-      labels.forEach(([key, i]) => {
-        if (statLabels[i] && T[key]) statLabels[i].textContent = T[key];
-      });
+      const statKeys = ['tor_stat_status','tor_stat_port','tor_stat_bundle','tor_stat_managed'];
+      statKeys.forEach((key, i) => { if (statLabels[i] && T[key]) statLabels[i].textContent = T[key]; });
+
       const renewLabel = document.querySelector('.tor-adv-row label');
       if (renewLabel && T.tor_renew_label) renewLabel.textContent = T.tor_renew_label;
 
-      const btnMap = {
-        advSaveBtn: 'tor_save_btn', torStartBtn: 'tor_start_btn',
-        torStopBtn: 'tor_stop_btn', torRenewBtn: 'tor_renew_btn',
-        torInstallBtn: 'tor_install_btn',
-      };
-      Object.entries(btnMap).forEach(([id, key]) => {
-        const el = document.getElementById(id);
-        if (el && T[key]) el.textContent = T[key];
-      });
+      // torMode section
+      byId('torModeTitle',   'tor_mode_title');
+      const lblBypass  = document.getElementById('torModeLabelBypass');
+      const lblDarkweb = document.getElementById('torModeLabelDarkweb');
+      if (lblBypass  && T.tor_mode_bypass)  { const r = lblBypass.querySelector('input');  lblBypass.textContent  = '';  lblBypass.appendChild(r);  lblBypass.append(' ' + T.tor_mode_bypass); }
+      if (lblDarkweb && T.tor_mode_darkweb) { const r = lblDarkweb.querySelector('input'); lblDarkweb.textContent = ''; lblDarkweb.appendChild(r); lblDarkweb.append(' ' + T.tor_mode_darkweb); }
+      const hint = document.getElementById('torModeHint');
+      if (hint && T.tor_mode_hint_bypass) {
+        const isDark = document.querySelector('input[name="torMode"]:checked')?.value === 'darkweb';
+        hint.textContent = isDark ? (T.tor_mode_hint_darkweb || hint.textContent) : T.tor_mode_hint_bypass;
+      }
 
-      const onionTitle = document.querySelector('.onion-section-title');
-      if (onionTitle && T.onion_title) onionTitle.textContent = T.onion_title;
-      const onionLabels = document.querySelectorAll('.onion-mode-label');
-      if (onionLabels[0] && T.onion_mode_hybrid) {
-        const span = onionLabels[0].querySelector('span') || onionLabels[0];
-        span.childNodes[span.childNodes.length - 1].textContent = ' ' + T.onion_mode_hybrid;
-      }
-      if (onionLabels[1] && T.onion_mode_only) {
-        const span = onionLabels[1].querySelector('span') || onionLabels[1];
-        span.childNodes[span.childNodes.length - 1].textContent = ' ' + T.onion_mode_only;
-      }
+      // onionSection
+      byId('onionSectionTitle', 'onion_title');
+      byId('onionSectionDesc',  'onion_desc');
+      const lblHybrid = document.getElementById('onionModeLabelHybrid');
+      const lblOnly   = document.getElementById('onionModeLabelOnly');
+      if (lblHybrid && T.onion_mode_hybrid) { const r = lblHybrid.querySelector('input'); lblHybrid.textContent = ''; lblHybrid.appendChild(r); lblHybrid.append(' ' + T.onion_mode_hybrid); }
+      if (lblOnly   && T.onion_mode_only)   { const r = lblOnly.querySelector('input');   lblOnly.textContent   = ''; lblOnly.appendChild(r);   lblOnly.append(' ' + T.onion_mode_only); }
     }
 
     function _applyEngMgrLabels(T) {
