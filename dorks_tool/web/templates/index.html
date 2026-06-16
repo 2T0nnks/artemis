@@ -65,6 +65,9 @@
       padding: 0 24px 80px;
     }
 
+    /* allow lang-picker absolute positioning inside .app */
+    .app { isolation: isolate; }
+
     /* ── Header ── */
     header {
       text-align: center;
@@ -971,6 +974,20 @@
       text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px;
     }
 
+    /* ── Language picker ── */
+    .lang-picker {
+      position: absolute; top: 24px; right: 0;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .lang-btn {
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 12px; padding: 4px 9px;
+      border-radius: 6px; cursor: pointer; transition: all 0.15s;
+      font-family: inherit; font-weight: 500;
+    }
+    .lang-btn:hover { color: var(--text); border-color: var(--border-strong); }
+    .lang-btn.active { color: var(--accent-light); border-color: var(--accent); background: rgba(124,58,237,0.1); }
+
     /* ── Status bar ── */
     #statusBar {
       font-size: 12px;
@@ -1256,12 +1273,19 @@
 </head>
 <body>
   <div class="app">
+    <!-- Language Picker -->
+    <div class="lang-picker">
+      <button class="lang-btn active" data-lang="pt">🇧🇷 PT</button>
+      <button class="lang-btn" data-lang="en">🇺🇸 EN</button>
+      <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+    </div>
+
     <header>
       <div class="logo">
         <span class="logo-icon">🏹</span>
         <span class="logo-name">Artemis</span>
       </div>
-      <p class="tagline">Precision search across multiple engines</p>
+      <p class="tagline" data-i18n="tagline">Busca precisa em múltiplas engines</p>
     </header>
 
     <!-- Category pills -->
@@ -1299,22 +1323,22 @@
 
     <!-- Advanced toggle -->
     <div class="advanced-toggle" id="advancedToggle" style="display:none">
-      <span class="arrow">▶</span> Opções avançadas
+      <span class="arrow">▶</span> <span data-i18n="adv_options">Opções avançadas</span>
     </div>
 
     <!-- Advanced form -->
     <div class="advanced-form" id="advancedForm">
       <div class="form-grid">
         <div class="form-group full">
-          <label class="form-label">Excluir sites (separados por vírgula)</label>
-          <input class="form-input" id="advExcludes" type="text" placeholder="amazon.com, goodreads.com" />
+          <label class="form-label" data-i18n="excl_sites_label">Excluir sites (separados por vírgula)</label>
+          <input class="form-input" id="advExcludes" type="text" data-i18n-placeholder="excl_sites_ph" placeholder="amazon.com, goodreads.com" />
         </div>
         <div class="form-group full">
-          <label class="form-label">Operadores extras</label>
-          <input class="form-input" id="advExtraOps" type="text" placeholder="site:gov.br  before:2024  intext:confidencial" />
+          <label class="form-label" data-i18n="extra_ops_label">Operadores extras</label>
+          <input class="form-input" id="advExtraOps" type="text" data-i18n-placeholder="extra_ops_ph" placeholder="site:gov.br  before:2024  intext:confidencial" />
         </div>
         <div class="form-group full">
-          <label class="form-label">Formatos</label>
+          <label class="form-label" data-i18n="formats_label">Formatos</label>
           <div class="format-chips" id="formatChips"></div>
         </div>
       </div>
@@ -1322,7 +1346,7 @@
 
     <!-- Engines row -->
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:28px; flex-wrap:wrap;">
-      <span class="engines-label">Engines:</span>
+      <span class="engines-label" data-i18n="engines_label">Engines:</span>
       <div class="engines-row" id="enginesRow" style="margin-bottom:0; flex:1;">
         {% for engine in engines %}
           {% if engine.available %}
@@ -1337,8 +1361,8 @@
         <span class="tor-dot"></span>
         <span id="torLabel">Tor</span>
       </div>
-      <button class="tor-gear-btn" id="torGearBtn" title="Configurações avançadas do Tor">⚙</button>
-      <button class="eng-mgr-btn" id="engMgrBtn" title="Gerenciar engines customizadas">🔌</button>
+      <button class="tor-gear-btn" id="torGearBtn" data-i18n-title="tor_settings_title" title="Configurações avançadas do Tor">⚙</button>
+      <button class="eng-mgr-btn" id="engMgrBtn" data-i18n-title="eng_mgr_title" title="Gerenciar engines customizadas">🔌</button>
     </div>
 
     <!-- Tor advanced panel -->
@@ -2734,6 +2758,344 @@
     });
 
     function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  })();
+  </script>
+
+  <script>
+  /* ══════════════════════════════════════════
+     i18n — Language Picker
+  ══════════════════════════════════════════ */
+  (function() {
+    const TRANSLATIONS = {
+      pt: {
+        tagline: 'Busca precisa em múltiplas engines',
+        search_placeholder: 'site:gov.br filetype:pdf  ou  inurl:login "admin"',
+        engines_label: 'Engines:',
+        adv_options: 'Opções avançadas',
+        excl_sites_label: 'Excluir sites (separados por vírgula)',
+        excl_sites_ph: 'amazon.com, goodreads.com',
+        extra_ops_label: 'Operadores extras',
+        extra_ops_ph: 'site:gov.br  before:2024  intext:confidencial',
+        formats_label: 'Formatos',
+        tor_settings_title: 'Configurações avançadas do Tor',
+        eng_mgr_title: 'Gerenciar engines customizadas',
+        status_ready: 'Selecione engines e pressione Enter ou →',
+        status_searching: 'Buscando…',
+        status_no_results: 'Nenhum resultado encontrado.',
+        btn_search_title: 'Pesquisar',
+        clear_btn: 'Limpar',
+        export_btn: '⬇ Exportar',
+        export_json: 'JSON',
+        export_csv: 'CSV',
+        copy_btn: 'Copiar',
+        copied_btn: 'Copiado!',
+        inspect_btn: 'Inspecionar',
+        vt_btn: '🛡 VirusTotal',
+        vt_checking: 'Verificando…',
+        engmgr_title: '🔌 Engine Manager',
+        engmgr_tab_list: 'Engines ativas',
+        engmgr_tab_add: 'Adicionar engine',
+        engmgr_custom_title: 'Engines customizadas',
+        engmgr_builtin_title: 'Engines builtin',
+        engmgr_test_all: '🩺 Testar todas',
+        engmgr_save: '💾 Salvar engine',
+        engmgr_save_auto: '🔍 Salvar e auto-detectar',
+        engmgr_test: '🩺 Testar sem salvar',
+        engmgr_empty: 'Nenhuma engine customizada cadastrada.',
+        engmgr_hint: 'Use <code>{query}</code> nos parâmetros para o termo de busca. Dica: não sabe os seletores? Use <strong>Salvar e auto-detectar</strong>.',
+        engmgr_name_label: 'Nome *',
+        engmgr_slug_label: 'Slug *',
+        engmgr_url_label: 'URL de busca *',
+        engmgr_method_label: 'Método',
+        engmgr_qparam_label: 'Parâmetro da query',
+        engmgr_params_label: 'Parâmetros extras (JSON)',
+        engmgr_result_sel_label: 'Seletor CSS — container do resultado *',
+        engmgr_title_sel_label: 'Seletor CSS — título / link *',
+        engmgr_snippet_sel_label: 'Seletor CSS — snippet',
+        tor_adv_title: '⚙ Tor — Configurações avançadas',
+        tor_stat_status: 'Status',
+        tor_stat_port: 'Porta ativa',
+        tor_stat_bundle: 'Bundle instalado',
+        tor_stat_managed: 'Gerenciado pelo Artemis',
+        tor_renew_label: 'Renovar circuito a cada N buscas',
+        tor_save_btn: 'Salvar',
+        tor_start_btn: '▶ Iniciar Tor',
+        tor_stop_btn: '⏹ Parar',
+        tor_renew_btn: '↺ Renovar circuito agora',
+        tor_install_btn: '⬇ Instalar bundle',
+        onion_title: '🧅 Rede .onion',
+        onion_mode_hybrid: 'Surface + Onion',
+        onion_mode_only: 'Só .onion',
+        filter_all: 'Todos',
+        filter_onion: 'Só Onion',
+      },
+      en: {
+        tagline: 'Precision search across multiple engines',
+        search_placeholder: 'site:gov.br filetype:pdf  or  inurl:login "admin"',
+        engines_label: 'Engines:',
+        adv_options: 'Advanced options',
+        excl_sites_label: 'Exclude sites (comma-separated)',
+        excl_sites_ph: 'amazon.com, goodreads.com',
+        extra_ops_label: 'Extra operators',
+        extra_ops_ph: 'site:gov.br  before:2024  intext:confidential',
+        formats_label: 'Formats',
+        tor_settings_title: 'Advanced Tor settings',
+        eng_mgr_title: 'Manage custom engines',
+        status_ready: 'Select engines and press Enter or →',
+        status_searching: 'Searching…',
+        status_no_results: 'No results found.',
+        btn_search_title: 'Search',
+        clear_btn: 'Clear',
+        export_btn: '⬇ Export',
+        export_json: 'JSON',
+        export_csv: 'CSV',
+        copy_btn: 'Copy',
+        copied_btn: 'Copied!',
+        inspect_btn: 'Inspect',
+        vt_btn: '🛡 VirusTotal',
+        vt_checking: 'Checking…',
+        engmgr_title: '🔌 Engine Manager',
+        engmgr_tab_list: 'Active engines',
+        engmgr_tab_add: 'Add engine',
+        engmgr_custom_title: 'Custom engines',
+        engmgr_builtin_title: 'Builtin engines',
+        engmgr_test_all: '🩺 Test all',
+        engmgr_save: '💾 Save engine',
+        engmgr_save_auto: '🔍 Save & auto-detect',
+        engmgr_test: '🩺 Test without saving',
+        engmgr_empty: 'No custom engines registered.',
+        engmgr_hint: 'Use <code>{query}</code> in parameters for the search term. Tip: not sure about selectors? Use <strong>Save & auto-detect</strong>.',
+        engmgr_name_label: 'Name *',
+        engmgr_slug_label: 'Slug *',
+        engmgr_url_label: 'Search URL *',
+        engmgr_method_label: 'Method',
+        engmgr_qparam_label: 'Query parameter',
+        engmgr_params_label: 'Extra parameters (JSON)',
+        engmgr_result_sel_label: 'CSS selector — result container *',
+        engmgr_title_sel_label: 'CSS selector — title / link *',
+        engmgr_snippet_sel_label: 'CSS selector — snippet',
+        tor_adv_title: '⚙ Tor — Advanced settings',
+        tor_stat_status: 'Status',
+        tor_stat_port: 'Active port',
+        tor_stat_bundle: 'Bundle installed',
+        tor_stat_managed: 'Managed by Artemis',
+        tor_renew_label: 'Renew circuit every N searches',
+        tor_save_btn: 'Save',
+        tor_start_btn: '▶ Start Tor',
+        tor_stop_btn: '⏹ Stop',
+        tor_renew_btn: '↺ Renew circuit now',
+        tor_install_btn: '⬇ Install bundle',
+        onion_title: '🧅 .onion Network',
+        onion_mode_hybrid: 'Surface + Onion',
+        onion_mode_only: '.onion only',
+        filter_all: 'All',
+        filter_onion: 'Onion only',
+      },
+      es: {
+        tagline: 'Búsqueda precisa en múltiples motores',
+        search_placeholder: 'site:gov.br filetype:pdf  o  inurl:login "admin"',
+        engines_label: 'Motores:',
+        adv_options: 'Opciones avanzadas',
+        excl_sites_label: 'Excluir sitios (separados por coma)',
+        excl_sites_ph: 'amazon.com, goodreads.com',
+        extra_ops_label: 'Operadores extra',
+        extra_ops_ph: 'site:gov.br  before:2024  intext:confidencial',
+        formats_label: 'Formatos',
+        tor_settings_title: 'Configuración avanzada de Tor',
+        eng_mgr_title: 'Gestionar motores personalizados',
+        status_ready: 'Selecciona motores y presiona Enter o →',
+        status_searching: 'Buscando…',
+        status_no_results: 'No se encontraron resultados.',
+        btn_search_title: 'Buscar',
+        clear_btn: 'Limpiar',
+        export_btn: '⬇ Exportar',
+        export_json: 'JSON',
+        export_csv: 'CSV',
+        copy_btn: 'Copiar',
+        copied_btn: '¡Copiado!',
+        inspect_btn: 'Inspeccionar',
+        vt_btn: '🛡 VirusTotal',
+        vt_checking: 'Verificando…',
+        engmgr_title: '🔌 Gestor de motores',
+        engmgr_tab_list: 'Motores activos',
+        engmgr_tab_add: 'Agregar motor',
+        engmgr_custom_title: 'Motores personalizados',
+        engmgr_builtin_title: 'Motores integrados',
+        engmgr_test_all: '🩺 Probar todos',
+        engmgr_save: '💾 Guardar motor',
+        engmgr_save_auto: '🔍 Guardar y auto-detectar',
+        engmgr_test: '🩺 Probar sin guardar',
+        engmgr_empty: 'No hay motores personalizados registrados.',
+        engmgr_hint: 'Usa <code>{query}</code> en los parámetros para el término de búsqueda. Consejo: ¿no sabes los selectores? Usa <strong>Guardar y auto-detectar</strong>.',
+        engmgr_name_label: 'Nombre *',
+        engmgr_slug_label: 'Slug *',
+        engmgr_url_label: 'URL de búsqueda *',
+        engmgr_method_label: 'Método',
+        engmgr_qparam_label: 'Parámetro de búsqueda',
+        engmgr_params_label: 'Parámetros extra (JSON)',
+        engmgr_result_sel_label: 'Selector CSS — contenedor de resultado *',
+        engmgr_title_sel_label: 'Selector CSS — título / enlace *',
+        engmgr_snippet_sel_label: 'Selector CSS — fragmento',
+        tor_adv_title: '⚙ Tor — Configuración avanzada',
+        tor_stat_status: 'Estado',
+        tor_stat_port: 'Puerto activo',
+        tor_stat_bundle: 'Bundle instalado',
+        tor_stat_managed: 'Gestionado por Artemis',
+        tor_renew_label: 'Renovar circuito cada N búsquedas',
+        tor_save_btn: 'Guardar',
+        tor_start_btn: '▶ Iniciar Tor',
+        tor_stop_btn: '⏹ Detener',
+        tor_renew_btn: '↺ Renovar circuito ahora',
+        tor_install_btn: '⬇ Instalar bundle',
+        onion_title: '🧅 Red .onion',
+        onion_mode_hybrid: 'Surface + Onion',
+        onion_mode_only: 'Solo .onion',
+        filter_all: 'Todos',
+        filter_onion: 'Solo Onion',
+      }
+    };
+
+    let currentLang = localStorage.getItem('artemis_lang') || 'pt';
+
+    function applyLang(lang) {
+      const T = TRANSLATIONS[lang];
+      if (!T) return;
+      currentLang = lang;
+      localStorage.setItem('artemis_lang', lang);
+
+      // Update html lang attribute
+      document.documentElement.lang = lang === 'pt' ? 'pt-BR' : lang === 'es' ? 'es' : 'en';
+
+      // data-i18n → textContent
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (T[key] !== undefined) {
+          if (el.innerHTML !== T[key] && (el.children.length === 0)) {
+            el.textContent = T[key];
+          } else if (el.children.length === 0) {
+            el.textContent = T[key];
+          }
+        }
+      });
+
+      // data-i18n-placeholder → placeholder
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.dataset.i18nPlaceholder;
+        if (T[key] !== undefined) el.placeholder = T[key];
+      });
+
+      // data-i18n-title → title attribute
+      document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        const key = el.dataset.i18nTitle;
+        if (T[key] !== undefined) el.title = T[key];
+      });
+
+      // search input placeholder
+      const si = document.getElementById('searchInput');
+      if (si && T.search_placeholder) si.placeholder = T.search_placeholder;
+
+      // Tor panel labels
+      _applyTorLabels(T);
+
+      // Engine Manager labels
+      _applyEngMgrLabels(T);
+
+      // Active lang button highlight
+      document.querySelectorAll('.lang-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.lang === lang);
+      });
+    }
+
+    function _applyTorLabels(T) {
+      const map = {
+        '.tor-adv-title': 'tor_adv_title',
+      };
+      Object.entries(map).forEach(([sel, key]) => {
+        const el = document.querySelector(sel);
+        if (el && T[key]) el.textContent = T[key];
+      });
+      const labels = [
+        ['tor_stat_status', 0], ['tor_stat_port', 1],
+        ['tor_stat_bundle', 2], ['tor_stat_managed', 3]
+      ];
+      const statLabels = document.querySelectorAll('.tor-stat-label');
+      labels.forEach(([key, i]) => {
+        if (statLabels[i] && T[key]) statLabels[i].textContent = T[key];
+      });
+      const renewLabel = document.querySelector('.tor-adv-row label');
+      if (renewLabel && T.tor_renew_label) renewLabel.textContent = T.tor_renew_label;
+
+      const btnMap = {
+        advSaveBtn: 'tor_save_btn', torStartBtn: 'tor_start_btn',
+        torStopBtn: 'tor_stop_btn', torRenewBtn: 'tor_renew_btn',
+        torInstallBtn: 'tor_install_btn',
+      };
+      Object.entries(btnMap).forEach(([id, key]) => {
+        const el = document.getElementById(id);
+        if (el && T[key]) el.textContent = T[key];
+      });
+
+      const onionTitle = document.querySelector('.onion-section-title');
+      if (onionTitle && T.onion_title) onionTitle.textContent = T.onion_title;
+      const onionLabels = document.querySelectorAll('.onion-mode-label');
+      if (onionLabels[0] && T.onion_mode_hybrid) {
+        const span = onionLabels[0].querySelector('span') || onionLabels[0];
+        span.childNodes[span.childNodes.length - 1].textContent = ' ' + T.onion_mode_hybrid;
+      }
+      if (onionLabels[1] && T.onion_mode_only) {
+        const span = onionLabels[1].querySelector('span') || onionLabels[1];
+        span.childNodes[span.childNodes.length - 1].textContent = ' ' + T.onion_mode_only;
+      }
+    }
+
+    function _applyEngMgrLabels(T) {
+      const h2 = document.querySelector('.engmgr-header h2');
+      if (h2 && T.engmgr_title) h2.textContent = T.engmgr_title;
+
+      const tabs = document.querySelectorAll('.engmgr-tab');
+      if (tabs[0] && T.engmgr_tab_list) tabs[0].textContent = T.engmgr_tab_list;
+      if (tabs[1] && T.engmgr_tab_add) tabs[1].textContent = T.engmgr_tab_add;
+
+      const sectionTitles = document.querySelectorAll('.engmgr-section-title');
+      if (sectionTitles[0] && T.engmgr_custom_title) sectionTitles[0].textContent = T.engmgr_custom_title;
+      if (sectionTitles[1] && T.engmgr_builtin_title) sectionTitles[1].textContent = T.engmgr_builtin_title;
+
+      const btnMap = {
+        engHealthAllBtn: 'engmgr_test_all',
+        engSaveBtn: 'engmgr_save',
+        engSaveAutoBtn: 'engmgr_save_auto',
+        engTestBtn: 'engmgr_test',
+      };
+      Object.entries(btnMap).forEach(([id, key]) => {
+        const el = document.getElementById(id);
+        if (el && T[key]) el.textContent = T[key];
+      });
+
+      const hint = document.querySelector('.engmgr-hint');
+      if (hint && T.engmgr_hint) hint.innerHTML = T.engmgr_hint;
+
+      const fieldLabels = document.querySelectorAll('#engTabAdd .engmgr-field label');
+      const labelKeys = [
+        'engmgr_name_label','engmgr_slug_label','engmgr_url_label',
+        'engmgr_method_label','engmgr_qparam_label','engmgr_params_label',
+        'engmgr_result_sel_label','engmgr_title_sel_label','engmgr_snippet_sel_label'
+      ];
+      fieldLabels.forEach((lbl, i) => {
+        if (labelKeys[i] && T[labelKeys[i]]) lbl.textContent = T[labelKeys[i]];
+      });
+    }
+
+    // Init on load
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => applyLang(btn.dataset.lang));
+    });
+
+    // Apply saved language (or pt default) after DOM is ready
+    applyLang(currentLang);
+
+    // Expose for other scripts if needed
+    window._artemisLang = () => currentLang;
+    window._artemisT = (key) => (TRANSLATIONS[currentLang] || TRANSLATIONS.pt)[key] || key;
   })();
   </script>
 </body>

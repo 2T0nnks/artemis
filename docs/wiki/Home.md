@@ -16,6 +16,8 @@
 - [Anti-bloqueio](#anti-bloqueio)
 - [Exportar resultados](#exportar-resultados)
 - [VirusTotal](#virustotal)
+- [Engine Manager](#engine-manager)
+- [Interface multilíngue](#interface-multilíngue)
 - [CLI](#cli)
 
 ---
@@ -56,6 +58,7 @@ python artemis.py web         # → http://127.0.0.1:5000
 | `ecosia` | Ecosia | Engine sustentável |
 | `brave_html` | Brave Search | Scraper HTML |
 | `brave` | Brave API | Requer `BRAVE_API_KEY` |
+| *custom* | *qualquer* | Adicionadas via Engine Manager |
 
 ### Rede .onion *(requer Tor ativo)*
 
@@ -168,6 +171,54 @@ A exportação é feita totalmente no cliente (sem nova requisição ao servidor
 ## VirusTotal
 
 Se `VIRUSTOTAL_API_KEY` estiver configurada, cada resultado exibe um badge de segurança. Clique em **Verificar** para consultar o relatório completo da URL via API VT.
+
+---
+
+## Engine Manager
+
+Clique no botão **🔌** ao lado do badge Tor na web app.
+
+### Adicionar engine
+
+1. Abra a aba **Adicionar engine**
+2. Preencha nome, slug único, URL de busca e método (GET/POST)
+3. Informe o parâmetro da query (ex: `q`) — o valor `{query}` será substituído pelo termo buscado
+4. Informe seletores CSS para o container de resultado e para o título/link
+5. Clique em **Salvar engine** ou **Salvar e auto-detectar**
+
+### Estrutura do `engines.json`
+
+```json
+{
+  "slug": "minha-engine",
+  "name": "Minha Engine",
+  "url": "https://exemplo.com/search",
+  "method": "GET",
+  "params": {"q": "{query}"},
+  "result_selector": "div.result",
+  "title_selector": "h2 a",
+  "snippet_selector": "p.desc",
+  "enabled": true,
+  "health": "ok"
+}
+```
+
+### Health check
+
+O botão 🦩 roda uma busca de teste (`python`) e marca a engine como:
+- **ok** — retornou resultados
+- **degraded** — respondeu mas sem resultados
+- **offline** — falhou completamente
+
+### Auto-detectar seletores
+
+O Artemis busca a página com o termo `python`, analisa a estrutura HTML e tenta inferir os seletores corretos usando heurísticas semânticas e estruturais. Se conseguir, atualiza o `engines.json` automaticamente.
+
+---
+
+## Interface multilíngue
+
+Clique nos botões 🇧🇷 **PT** · 🇺🇸 **EN** · 🇪🇸 **ES** no canto superior direito para alternar o idioma da interface. A preferência é salva no `localStorage`.
 
 ---
 

@@ -16,6 +16,8 @@
 - [Capa anti-bloqueo](#capa-anti-bloqueo)
 - [Exportar resultados](#exportar-resultados)
 - [VirusTotal](#virustotal)
+- [Gestor de motores](#gestor-de-motores)
+- [Interfaz multilingüe](#interfaz-multilingüe)
 - [CLI](#cli)
 
 ---
@@ -56,6 +58,7 @@ python artemis.py web         # → http://127.0.0.1:5000
 | `ecosia` | Ecosia | Motor ecológico |
 | `brave_html` | Brave Search | Scraper HTML |
 | `brave` | Brave API | Requiere `BRAVE_API_KEY` |
+| *personalizado* | *cualquiera* | Agregado vía Gestor de motores |
 
 ### Red .onion *(requiere Tor activo)*
 
@@ -168,6 +171,54 @@ La exportación se realiza completamente en el cliente (sin petición adicional 
 ## VirusTotal
 
 Si `VIRUSTOTAL_API_KEY` está configurada, cada resultado muestra un badge de seguridad. Haz clic en **Verificar** para consultar el informe completo de la URL vía la API de VT.
+
+---
+
+## Gestor de motores
+
+Haz clic en el botón **🔌** junto al badge de Tor en la web app.
+
+### Agregar un motor
+
+1. Abre la pestaña **Agregar motor**
+2. Completa nombre, slug único, URL de búsqueda y método (GET/POST)
+3. Indica el parámetro de búsqueda (ej: `q`) — `{query}` será reemplazado por el término buscado
+4. Agrega selectores CSS para el contenedor de resultado y el título/enlace
+5. Haz clic en **Guardar motor** o **Guardar y auto-detectar**
+
+### Estructura de `engines.json`
+
+```json
+{
+  "slug": "mi-motor",
+  "name": "Mi Motor",
+  "url": "https://ejemplo.com/search",
+  "method": "GET",
+  "params": {"q": "{query}"},
+  "result_selector": "div.result",
+  "title_selector": "h2 a",
+  "snippet_selector": "p.desc",
+  "enabled": true,
+  "health": "ok"
+}
+```
+
+### Health check
+
+El botón 🦩 ejecuta una búsqueda de prueba (`python`) y marca el motor como:
+- **ok** — devolverá resultados
+- **degraded** — respondió pero sin resultados
+- **offline** — falló completamente
+
+### Auto-detectar selectores
+
+Artemis obtiene la página con la consulta `python`, analiza la estructura HTML e infiere los selectores correctos usando heurísticas semánticas y estructurales. Si lo logra, actualiza `engines.json` automáticamente.
+
+---
+
+## Interfaz multilingüe
+
+Haz clic en los botones 🇧🇷 **PT** · 🇺🇸 **EN** · 🇪🇸 **ES** en la esquina superior derecha para cambiar el idioma de la interfaz. Tu preferencia se guarda en `localStorage`.
 
 ---
 

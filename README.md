@@ -48,7 +48,7 @@ cp .env.example .env     # Linux/Mac
 | `BRAVE_API_KEY` | Engine Brave Search via API oficial |
 | `TOR_PROXY` | Ex: `socks5://127.0.0.1:9050` |
 
-Sem nenhuma chave, o Artemis já funciona com 10 engines gratuitas.
+Sem nenhuma chave, o Artemis já funciona com 10 engines gratuitas + engines customizadas via Engine Manager.
 
 ---
 
@@ -116,16 +116,30 @@ O Tor serve para **duas coisas**:
 
 ## Funcionalidades
 
-- 🔍 **Multi-engine** — 10 engines em paralelo com deduplicação
+- 🔍 **Multi-engine** — 10+ engines em paralelo com deduplicação
 - 🛡 **Anti-bloqueio** — rotação de UA, headers aleatórios, retry com backoff
 - 🧅 **Tor dual-mode** — bypass de scraping + busca na rede .onion (Ahmia, Torch, Haystack)
-- 📋 **Copiar URL** com um clique
+- � **Engine Manager** — adicione engines customizadas via painel, com health check e auto-detecção de seletores
+- 🌐 **Interface multilíngue** — PT 🇧🇷 / EN 🇺🇸 / ES 🇪🇸
+- �📋 **Copiar URL** com um clique
 - 🕒 **Histórico de buscas** (localStorage)
 - 🔽 **Exportar** resultados em JSON ou CSV
 - 🔎 **Filtro por engine** pós-busca (incluindo filtro exclusivo 🧅 Onion)
 - 🛡 **VirusTotal** inline por resultado
 - 🏹 **Dork builder** com operadores extras (`site:`, `before:`, `after:`), preview colorido por operador
 - 🎯 **Sites-alvo** — campo de operadores extras no painel avançado
+
+---
+
+## Engine Manager
+
+Clique no botão **🔌** ao lado do badge Tor para abrir o painel de engines customizadas.
+
+- **Adicionar engine** — informe URL, método, parâmetros e seletores CSS
+- **Auto-detectar seletores** — o Artemis busca a página e tenta inferir os seletores automaticamente
+- **Health check** — testa se a engine está retornando resultados (`ok` / `degraded` / `offline`)
+- **Ativar/Desativar** — sem precisar remover a configuração
+- **Persistência** — configurações salvas em `dorks_tool/engines.json`
 
 ---
 

@@ -47,7 +47,7 @@ cp .env.example .env
 | `BRAVE_API_KEY` | Brave Search via official API |
 | `TOR_PROXY` | e.g. `socks5://127.0.0.1:9050` |
 
-No keys needed — Artemis works out of the box with 10 free engines.
+No keys needed — Artemis works out of the box with 10 free engines + unlimited custom engines via Engine Manager.
 
 ---
 
@@ -115,9 +115,11 @@ Tor serves **two purposes**:
 
 ## Features
 
-- 🔍 **Multi-engine** — 10 parallel engines with deduplication
+- 🔍 **Multi-engine** — 10+ parallel engines with deduplication
 - 🛡 **Anti-block** — UA rotation, randomized headers, retry with exponential backoff
 - 🧅 **Tor dual-mode** — scraping bypass + dark web search (Ahmia, Torch, Haystack)
+- 🔌 **Engine Manager** — add custom engines via UI panel, with health check and auto-selector detection
+- 🌐 **Multilingual UI** — PT 🇧🇷 / EN 🇺🇸 / ES 🇪🇸
 - 📋 **One-click copy URL** per result
 - 🕒 **Search history** (localStorage, last 10)
 - 🔽 **Export** results as JSON or CSV
@@ -125,6 +127,18 @@ Tor serves **two purposes**:
 - 🛡 **VirusTotal** inline check per result
 - 🏹 **Dork builder** with extra operators (`site:`, `before:`, `after:`), color-coded preview
 - 🎯 **Target sites** — extra operators field in advanced panel
+
+---
+
+## Engine Manager
+
+Click the **🔌** button next to the Tor badge to open the custom engine panel.
+
+- **Add engine** — provide URL, method, parameters, and CSS selectors
+- **Auto-detect selectors** — Artemis fetches the page and infers working selectors automatically
+- **Health check** — tests if the engine returns results (`ok` / `degraded` / `offline`)
+- **Enable/Disable** — without removing the configuration
+- **Persistence** — settings saved in `dorks_tool/engines.json`
 
 ---
 

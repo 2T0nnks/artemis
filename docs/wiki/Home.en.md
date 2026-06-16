@@ -16,6 +16,8 @@
 - [Anti-block Layer](#anti-block-layer)
 - [Exporting Results](#exporting-results)
 - [VirusTotal](#virustotal)
+- [Engine Manager](#engine-manager)
+- [Multilingual UI](#multilingual-ui)
 - [CLI](#cli)
 
 ---
@@ -56,6 +58,7 @@ python artemis.py web         # → http://127.0.0.1:5000
 | `ecosia` | Ecosia | Eco-friendly engine |
 | `brave_html` | Brave Search | HTML scraper |
 | `brave` | Brave API | Requires `BRAVE_API_KEY` |
+| *custom* | *any* | Added via Engine Manager |
 
 ### .onion Network *(requires Tor active)*
 
@@ -168,6 +171,54 @@ Export is handled entirely client-side (no additional server request).
 ## VirusTotal
 
 If `VIRUSTOTAL_API_KEY` is configured, each result displays a safety badge. Click **Check** to query the full URL report via the VT API.
+
+---
+
+## Engine Manager
+
+Click the **🔌** button next to the Tor badge in the web app.
+
+### Adding an engine
+
+1. Open the **Add engine** tab
+2. Fill in name, unique slug, search URL and method (GET/POST)
+3. Set the query parameter (e.g. `q`) — `{query}` will be replaced with the search term
+4. Add CSS selectors for the result container and title/link
+5. Click **Save engine** or **Save & auto-detect**
+
+### `engines.json` structure
+
+```json
+{
+  "slug": "my-engine",
+  "name": "My Engine",
+  "url": "https://example.com/search",
+  "method": "GET",
+  "params": {"q": "{query}"},
+  "result_selector": "div.result",
+  "title_selector": "h2 a",
+  "snippet_selector": "p.desc",
+  "enabled": true,
+  "health": "ok"
+}
+```
+
+### Health check
+
+The 🦩 button runs a test search (`python`) and marks the engine as:
+- **ok** — returned results
+- **degraded** — responded but no results
+- **offline** — failed completely
+
+### Auto-detect selectors
+
+Artemis fetches the page with the query `python`, analyzes the HTML structure and infers working selectors using semantic and structural heuristics. If successful, updates `engines.json` automatically.
+
+---
+
+## Multilingual UI
+
+Click the 🇧🇷 **PT** · 🇺🇸 **EN** · 🇪🇸 **ES** buttons in the top-right corner to switch the interface language. Your preference is saved in `localStorage`.
 
 ---
 

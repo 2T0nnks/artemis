@@ -47,7 +47,7 @@ cp .env.example .env
 | `BRAVE_API_KEY` | Motor Brave Search vía API oficial |
 | `TOR_PROXY` | Ej: `socks5://127.0.0.1:9050` |
 
-Sin ninguna clave, Artemis funciona con 10 motores gratuitos.
+Sin ninguna clave, Artemis funciona con 10 motores gratuitos + motores personalizados vía Engine Manager.
 
 ---
 
@@ -115,9 +115,11 @@ Tor sirve para **dos cosas**:
 
 ## Funcionalidades
 
-- 🔍 **Multi-motor** — 10 motores en paralelo con deduplicación
+- 🔍 **Multi-motor** — 10+ motores en paralelo con deduplicación
 - 🛡 **Anti-bloqueo** — rotación de UA, headers aleatorios, reintentos con backoff
 - 🧅 **Tor modo dual** — bypass de scraping + búsqueda en dark web (Ahmia, Torch, Haystack)
+- 🔌 **Gestor de motores** — agrega motores personalizados desde el panel, con health check y auto-detección de selectores
+- 🌐 **Interfaz multilingüe** — PT 🇧🇷 / EN 🇺🇸 / ES 🇪🇸
 - 📋 **Copiar URL** con un clic
 - 🕒 **Historial de búsquedas** (localStorage, últimas 10)
 - 🔽 **Exportar** resultados en JSON o CSV
@@ -125,6 +127,18 @@ Tor sirve para **dos cosas**:
 - 🛡 **VirusTotal** inline por resultado
 - 🏹 **Constructor de dorks** con operadores extra (`site:`, `before:`, `after:`), preview coloreado
 - 🎯 **Sitios objetivo** — campo de operadores extra en panel avanzado
+
+---
+
+## Gestor de motores
+
+Haz clic en el botón **🔌** junto al badge de Tor para abrir el panel de motores personalizados.
+
+- **Agregar motor** — proporciona URL, método, parámetros y selectores CSS
+- **Auto-detectar selectores** — Artemis obtiene la página e infiere los selectores automáticamente
+- **Health check** — prueba si el motor devuelve resultados (`ok` / `degraded` / `offline`)
+- **Activar/Desactivar** — sin eliminar la configuración
+- **Persistencia** — configuración guardada en `dorks_tool/engines.json`
 
 ---
 
