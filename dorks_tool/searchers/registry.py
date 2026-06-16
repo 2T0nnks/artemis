@@ -8,6 +8,7 @@ from .google import BingGlobalSearcher
 from .searx import SearXSearcher
 from .mojeek import MojeekSearcher
 from .ecosia import EcosiaSearcher
+from .onion import AhmiaSearcher, TorchSearcher, HaystackSearcher
 
 ALL_SEARCHERS = [
     DDGHTMLSearcher(),
@@ -20,7 +21,12 @@ ALL_SEARCHERS = [
     EcosiaSearcher(),
     BraveHTMLSearcher(),
     BraveSearcher(),
+    AhmiaSearcher(),
+    TorchSearcher(),
+    HaystackSearcher(),
 ]
+
+ONION_SLUGS = {"ahmia", "torch", "haystack"}
 
 SEARCHER_MAP = {s.slug: s for s in ALL_SEARCHERS}
 

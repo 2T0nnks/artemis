@@ -825,6 +825,40 @@
       display: none; line-height: 1.6;
     }
 
+    /* ── Onion section ── */
+    .onion-section {
+      margin-top: 14px;
+      border: 1px dashed rgba(167,139,250,0.35);
+      border-radius: 10px;
+      padding: 12px 14px;
+      background: rgba(124,58,237,0.05);
+      display: none;
+    }
+    .onion-section.visible { display: block; }
+    .onion-section-title {
+      font-size: 11px; font-weight: 600; color: #a78bfa;
+      letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .onion-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .onion-pill {
+      padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500;
+      border: 1px dashed rgba(167,139,250,0.5); background: transparent;
+      color: var(--text-dim); cursor: pointer; transition: all 0.15s ease;
+      user-select: none;
+    }
+    .onion-pill.active {
+      background: rgba(124,58,237,0.18); color: #a78bfa;
+      border-color: rgba(167,139,250,0.7);
+    }
+    .onion-mode-row {
+      display: flex; gap: 16px; align-items: center; margin-top: 6px;
+    }
+    .onion-mode-label {
+      font-size: 11px; color: var(--text-muted);
+      display: flex; align-items: center; gap: 5px; cursor: pointer;
+    }
+    .onion-mode-label input { accent-color: #7c3aed; cursor: pointer; }
+
     /* ── Status bar ── */
     #statusBar {
       font-size: 12px;
@@ -1230,6 +1264,24 @@
       </div>
 
       <div class="tor-adv-log" id="advLog"></div>
+
+      <!-- .onion engines — visible only when Tor is active -->
+      <div class="onion-section" id="onionSection">
+        <div class="onion-section-title">🧅 Rede .onion</div>
+        <div class="onion-pills" id="onionPills">
+          {% for eng in onion_engines %}
+          <div class="onion-pill" data-slug="{{ eng.slug }}">🧅 {{ eng.name }}</div>
+          {% endfor %}
+        </div>
+        <div class="onion-mode-row">
+          <label class="onion-mode-label">
+            <input type="radio" name="onionMode" value="hybrid" checked /> Surface + Onion
+          </label>
+          <label class="onion-mode-label">
+            <input type="radio" name="onionMode" value="only" /> Só .onion
+          </label>
+        </div>
+      </div>
     </div>
 
     <div id="statusBar"></div>
@@ -1436,6 +1488,9 @@
     let torOn        = false;
     let torAvailable = false;
 
+    const onionSection = document.getElementById('onionSection');
+    const onionPillsEl  = document.getElementById('onionPills');
+
     function setTorUI(on, available, error) {
       torAvailable = available;
       torOn = on;
@@ -1448,6 +1503,25 @@
           : 'Clique para configurar o Tor';
       torLabel.textContent = on ? 'Tor ON' : 'Tor';
       if (error) statusBar.textContent = '⚠️ ' + error;
+      if (onionSection) onionSection.classList.toggle('visible', on);
+    }
+
+    if (onionPillsEl) {
+      onionPillsEl.addEventListener('click', e => {
+        const pill = e.target.closest('.onion-pill');
+        if (!pill) return;
+        pill.classList.toggle('active');
+      });
+    }
+
+    function getOnionSlugs() {
+      if (!onionPillsEl) return [];
+      return [...onionPillsEl.querySelectorAll('.onion-pill.active')].map(p => p.dataset.slug);
+    }
+
+    function getOnionMode() {
+      const radio = document.querySelector('input[name="onionMode"]:checked');
+      return radio ? radio.value : 'hybrid';
     }
 
     function openTorModal() {
@@ -1782,7 +1856,16 @@
       const query = await buildQuery();
       if (!query) { searchInput.focus(); return; }
 
-      const slugs = getActiveSlugs();
+      const onionSlugs = getOnionSlugs();
+      const onionMode  = getOnionMode();
+      let slugs;
+      if (onionSlugs.length && onionMode === 'only') {
+        slugs = onionSlugs;
+      } else if (onionSlugs.length && onionMode === 'hybrid') {
+        slugs = [...new Set([...getActiveSlugs(), ...onionSlugs])];
+      } else {
+        slugs = getActiveSlugs();
+      }
       if (!slugs.length) { statusBar.textContent = 'Selecione ao menos uma engine.'; return; }
 
       showSkeleton();
@@ -1861,15 +1944,27 @@
       allBtn.dataset.engine = '';
       bar.appendChild(allBtn);
 
+      const onionEngineNames = new Set();
       engines.forEach(eng => {
         const count = results.filter(r => r.engine === eng).length;
         const btn = document.createElement('button');
-        btn.textContent = `${eng} (${count})`;
+        const isOnion = results.some(r => r.engine === eng && r.url && r.url.includes('.onion'));
+        if (isOnion) onionEngineNames.add(eng);
+        btn.textContent = `${isOnion ? '🧅 ' : ''}${eng} (${count})`;
         btn.dataset.engine = eng;
         const failed = (counts[eng] === 0);
         btn.style.cssText = `padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface-hover);color:${failed ? 'var(--text-dim)' : 'var(--text-muted)'};font-size:11px;cursor:pointer;`;
         bar.appendChild(btn);
       });
+
+      if (onionEngineNames.size > 0) {
+        const onionTotal = results.filter(r => r.url && r.url.includes('.onion')).length;
+        const obtn = document.createElement('button');
+        obtn.textContent = `🧅 Só Onion (${onionTotal})`;
+        obtn.dataset.engine = '__onion__';
+        obtn.style.cssText = 'padding:4px 10px;border-radius:20px;border:1px dashed rgba(167,139,250,0.5);background:rgba(124,58,237,0.08);color:#a78bfa;font-size:11px;cursor:pointer;font-weight:600;margin-left:4px;';
+        bar.appendChild(obtn);
+      }
 
       bar.addEventListener('click', e => {
         const btn = e.target.closest('button');
@@ -1882,7 +1977,14 @@
           b.style.color = active ? '#a78bfa' : 'var(--text-muted)';
           b.style.fontWeight = active ? '600' : '400';
         });
-        const filtered = eng ? _lastResults.filter(r => r.engine === eng) : _lastResults;
+        let filtered;
+        if (eng === '__onion__') {
+          filtered = _lastResults.filter(r => r.url && r.url.includes('.onion'));
+        } else if (eng) {
+          filtered = _lastResults.filter(r => r.engine === eng);
+        } else {
+          filtered = _lastResults;
+        }
         renderCards(filtered);
       });
 

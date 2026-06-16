@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from ..search import run_search
-from ..searchers.registry import ALL_SEARCHERS
+from ..searchers.registry import ALL_SEARCHERS, ONION_SLUGS
 from .. import virustotal
 from ..inspector import inspect_url
 from ..dork_builder import CATEGORIES, FORMATS_BY_CATEGORY, PLACEHOLDERS, build_dork
@@ -29,11 +29,18 @@ def create_app():
         engines = [
             {"slug": s.slug, "name": s.name, "available": s.is_available()}
             for s in ALL_SEARCHERS
+            if s.slug not in ONION_SLUGS
+        ]
+        onion_engines = [
+            {"slug": s.slug, "name": s.name}
+            for s in ALL_SEARCHERS
+            if s.slug in ONION_SLUGS
         ]
         vt_enabled = virustotal.is_available()
         return render_template(
             "index.html",
             engines=engines,
+            onion_engines=onion_engines,
             vt_enabled=vt_enabled,
             categories=CATEGORIES,
             formats_by_category=FORMATS_BY_CATEGORY,
