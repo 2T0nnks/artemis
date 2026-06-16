@@ -1265,11 +1265,27 @@
 
       <div class="tor-adv-log" id="advLog"></div>
 
-      <!-- .onion engines — visible only when Tor is active -->
+      <!-- Tor usage mode (visible when Tor is active) -->
+      <div class="onion-section" id="torModeSection" style="margin-top:14px;">
+        <div class="onion-section-title" style="margin-bottom:8px;">Modo de uso do Tor</div>
+        <div class="onion-mode-row">
+          <label class="onion-mode-label">
+            <input type="radio" name="torMode" value="bypass" checked /> 🛡 Só bypass (anti-scraping)
+          </label>
+          <label class="onion-mode-label">
+            <input type="radio" name="torMode" value="darkweb" /> 🧅 Bypass + Dark web
+          </label>
+        </div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:6px;line-height:1.5;" id="torModeHint">
+          Roteia engines normais pelo Tor para trocar de IP e evitar bloqueios.
+        </div>
+      </div>
+
+      <!-- .onion engines — visible only when Tor is active AND dark web mode is selected -->
       <div class="onion-section" id="onionSection">
-        <div class="onion-section-title">🧅 Rede .onion</div>
+        <div class="onion-section-title">🧅 Engines da rede .onion</div>
         <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.5;">
-          O Tor serve para <strong style="color:var(--text-muted)">duas coisas</strong>: bypassar bloqueios de scraping nas engines normais (trocando seu IP) e pesquisar diretamente na dark web usando as engines abaixo.
+          Pesquisa diretamente na dark web. As engines abaixo só funcionam via rede Tor.
         </div>
         <div class="onion-pills" id="onionPills">
           {% for eng in onion_engines %}
@@ -1491,8 +1507,10 @@
     let torOn        = false;
     let torAvailable = false;
 
-    const onionSection = document.getElementById('onionSection');
-    const onionPillsEl  = document.getElementById('onionPills');
+    const onionSection   = document.getElementById('onionSection');
+    const onionPillsEl   = document.getElementById('onionPills');
+    const torModeSection = document.getElementById('torModeSection');
+    const torModeHint    = document.getElementById('torModeHint');
 
     function setTorUI(on, available, error) {
       torAvailable = available;
@@ -1506,7 +1524,9 @@
           : 'Tor não detectado — clique para configurar. Permite bypass de bloqueios e busca na dark web.';
       torLabel.textContent = on ? 'Tor ON' : 'Tor';
       if (error) statusBar.textContent = '⚠️ ' + error;
-      if (onionSection) onionSection.classList.toggle('visible', on);
+      if (torModeSection) torModeSection.classList.toggle('visible', on);
+      const isDarkWeb = document.querySelector('input[name="torMode"]:checked')?.value === 'darkweb';
+      if (onionSection) onionSection.classList.toggle('visible', on && isDarkWeb);
     }
 
     if (onionPillsEl) {
@@ -1519,6 +1539,8 @@
 
     function getOnionSlugs() {
       if (!onionPillsEl) return [];
+      const torMode = document.querySelector('input[name="torMode"]:checked')?.value;
+      if (torMode !== 'darkweb') return [];
       return [...onionPillsEl.querySelectorAll('.onion-pill.active')].map(p => p.dataset.slug);
     }
 
@@ -1526,6 +1548,16 @@
       const radio = document.querySelector('input[name="onionMode"]:checked');
       return radio ? radio.value : 'hybrid';
     }
+
+    document.querySelectorAll('input[name="torMode"]').forEach(r => {
+      r.addEventListener('change', () => {
+        const isDarkWeb = r.value === 'darkweb';
+        if (onionSection) onionSection.classList.toggle('visible', isDarkWeb);
+        if (torModeHint) torModeHint.textContent = isDarkWeb
+          ? 'Roteia todas as engines pelo Tor e habilita busca nas engines .onion abaixo.'
+          : 'Roteia engines normais pelo Tor para trocar de IP e evitar bloqueios.';
+      });
+    });
 
     function openTorModal() {
       torModalLog.style.display = 'none';
