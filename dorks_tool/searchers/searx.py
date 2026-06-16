@@ -1,7 +1,10 @@
 import random
+import logging
 from typing import List
 from .base import BaseSearcher, SearchResult
 from ..http_client import request_with_retry
+
+logger = logging.getLogger(__name__)
 
 # Public SearXNG instances — shuffled each search for load distribution
 _INSTANCES = [
@@ -35,8 +38,10 @@ class SearXSearcher(BaseSearcher):
                     timeout=8,
                 )
                 if resp is None or resp.status_code != 200:
+                    logger.debug("[SearX] %s returned %s", base, getattr(resp, 'status_code', None))
                     continue
                 data = resp.json()
+                logger.debug("[SearX] %s returned %d results", base, len(data.get('results', [])))
                 for item in data.get("results", [])[:max_results]:
                     url = item.get("url", "")
                     if not url or not url.startswith("http"):
@@ -49,6 +54,7 @@ class SearXSearcher(BaseSearcher):
                     ))
                 if results:
                     return results
-            except Exception:
+            except Exception as exc:
+                logger.debug("[SearX] %s exception: %s", base, exc)
                 continue
         return results

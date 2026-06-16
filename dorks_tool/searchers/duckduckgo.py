@@ -1,6 +1,9 @@
+import logging
 from typing import List
 from duckduckgo_search import DDGS
 from .base import BaseSearcher, SearchResult
+
+logger = logging.getLogger(__name__)
 
 
 class DuckDuckGoSearcher(BaseSearcher):
@@ -20,5 +23,6 @@ class DuckDuckGoSearcher(BaseSearcher):
                         engine=self.name,
                     ))
             return results
-        except Exception:
+        except Exception as exc:
+            logger.debug("[DuckDuckGo API] exception: %s", exc, exc_info=True)
             return []

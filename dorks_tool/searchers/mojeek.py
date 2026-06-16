@@ -1,7 +1,10 @@
+import logging
 from bs4 import BeautifulSoup
 from typing import List
 from .base import BaseSearcher, SearchResult
 from ..http_client import request_with_retry
+
+logger = logging.getLogger(__name__)
 
 
 class MojeekSearcher(BaseSearcher):
@@ -20,9 +23,12 @@ class MojeekSearcher(BaseSearcher):
                 extra_headers={"Referer": "https://www.mojeek.com/"},
             )
             if resp is None or resp.status_code >= 400:
+                logger.debug("[Mojeek] bad response: %s", getattr(resp, 'status_code', None))
                 return results
             soup = BeautifulSoup(resp.text, "lxml")
-            for li in soup.select("ul.results-standard li.result")[:max_results]:
+            items = soup.select("ul.results-standard li.result")
+            logger.debug("[Mojeek] found %d result elements", len(items))
+            for li in items[:max_results]:
                 a = li.select_one("a.title, h2 a, .result-title a")
                 snippet_el = li.select_one(".s, .result-s, p")
                 if not a or not a.get("href"):
@@ -38,6 +44,6 @@ class MojeekSearcher(BaseSearcher):
                     snippet=snippet_el.get_text(strip=True) if snippet_el else "",
                     engine=self.name,
                 ))
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[Mojeek] exception: %s", exc, exc_info=True)
         return results

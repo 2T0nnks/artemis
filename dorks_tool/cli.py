@@ -12,7 +12,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from .search import run_search
-from .searchers.registry import ALL_SEARCHERS
+from .searchers.registry import ALL_SEARCHERS, ONION_SLUGS
+from .http_client import tor_enabled
 from . import virustotal
 from . import tor_setup
 
@@ -55,6 +56,14 @@ def search(
     _print_banner()
 
     engine_slugs = [e.strip() for e in engines.split(",")] if engines else None
+
+    if engine_slugs:
+        onion_requested = [s for s in engine_slugs if s in ONION_SLUGS]
+        if onion_requested and not tor_enabled():
+            console.print(
+                f"[yellow]⚠  Engines .onion ({', '.join(onion_requested)}) requerem Tor ativo.[/yellow] "
+                "Inicie com [bold]python artemis.py tor start[/bold] primeiro.\n"
+            )
 
     if vt and not virustotal.is_available():
         console.print("[yellow]⚠  VirusTotal desativado:[/yellow] configure [bold]VIRUSTOTAL_API_KEY[/bold] no arquivo .env\n")

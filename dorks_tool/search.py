@@ -2,6 +2,7 @@ from typing import List, Optional, Dict, Tuple
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from .searchers.base import SearchResult
 from .searchers.registry import get_available_searchers, get_searchers_by_slugs
+from .http_client import notify_search_complete
 
 
 def _deduplicate(results: List[SearchResult]) -> List[SearchResult]:
@@ -53,5 +54,7 @@ def run_search(
     deduped = _deduplicate(all_results)
 
     engine_counts = {slug: len(res) for slug, res in raw_by_engine.items()}
+
+    notify_search_complete()
 
     return deduped, engine_counts

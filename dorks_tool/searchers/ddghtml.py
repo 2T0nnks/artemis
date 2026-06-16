@@ -1,8 +1,11 @@
+import logging
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, parse_qs, unquote
 from typing import List
 from .base import BaseSearcher, SearchResult
 from ..http_client import request_with_retry
+
+logger = logging.getLogger(__name__)
 
 
 def _clean_ddg_url(href: str) -> str:
@@ -38,9 +41,11 @@ class DDGHTMLSearcher(BaseSearcher):
                 },
             )
             if resp is None:
+                logger.debug("[DDG] request_with_retry returned None")
                 return results
-            soup = BeautifulSoup(resp.text, "lxml")
-            for result in soup.select(".result")[:max_results]:
+            items = soup.select(".result") if (soup := BeautifulSoup(resp.text, "lxml")) else []
+            logger.debug("[DDG] found %d .result elements", len(items))
+            for result in items[:max_results]:
                 a = result.select_one(".result__title a, .result__a")
                 snippet_el = result.select_one(".result__snippet")
                 if not a:
@@ -54,6 +59,6 @@ class DDGHTMLSearcher(BaseSearcher):
                     snippet=snippet_el.get_text(strip=True) if snippet_el else "",
                     engine=self.name,
                 ))
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[DDG] exception: %s", exc, exc_info=True)
         return results

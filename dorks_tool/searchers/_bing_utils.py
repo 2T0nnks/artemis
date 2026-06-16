@@ -1,7 +1,10 @@
 """Shared Bing utilities: URL extraction and common search helper."""
 import re
+import logging
 from typing import List, Optional
 from urllib.parse import urlparse
+
+logger = logging.getLogger(__name__)
 
 
 def bing_url_from_cite(cite_text: str, fallback: str) -> str:
@@ -61,9 +64,15 @@ def bing_search(
             extra_headers={"Referer": "https://www.bing.com/", **(extra_headers or {})},
         )
         if resp is None:
+            logger.debug("[%s] request_with_retry returned None", engine_name)
+            return results
+        if resp.status_code >= 400:
+            logger.debug("[%s] HTTP %s", engine_name, resp.status_code)
             return results
         soup = BeautifulSoup(resp.text, "lxml")
-        for li in soup.select("li.b_algo")[:max_results]:
+        items = soup.select("li.b_algo")
+        logger.debug("[%s] found %d li.b_algo elements", engine_name, len(items))
+        for li in items[:max_results]:
             a = li.select_one("h2 a")
             cite = li.select_one("cite")
             snippet_el = li.select_one(".b_caption p, .b_descript")
@@ -79,6 +88,7 @@ def bing_search(
                 snippet=snippet_el.get_text(strip=True) if snippet_el else "",
                 engine=engine_name,
             ))
-    except Exception:
-        pass
+        logger.debug("[%s] returning %d results", engine_name, len(results))
+    except Exception as exc:
+        logger.debug("[%s] exception: %s", engine_name, exc, exc_info=True)
     return results

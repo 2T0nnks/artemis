@@ -4,10 +4,13 @@ Dark web search engines (.onion) for Artemis.
 All engines require Tor to be active (is_available() returns False otherwise).
 Requests are automatically routed via the SOCKS5 proxy in http_client.
 """
+import logging
 from bs4 import BeautifulSoup
 from typing import List
 from .base import BaseSearcher, SearchResult
 from ..http_client import request_with_retry, tor_enabled
+
+logger = logging.getLogger(__name__)
 
 
 class AhmiaSearcher(BaseSearcher):
@@ -30,9 +33,12 @@ class AhmiaSearcher(BaseSearcher):
                 timeout=30,
             )
             if resp is None or resp.status_code >= 400:
+                logger.debug("[Ahmia] bad response: %s", getattr(resp, 'status_code', None))
                 return results
             soup = BeautifulSoup(resp.text, "lxml")
-            for item in soup.select("li.result")[:max_results]:
+            items = soup.select("li.result")
+            logger.debug("[Ahmia] found %d li.result elements", len(items))
+            for item in items[:max_results]:
                 a = item.select_one("h4 a, h3 a, a[href]")
                 desc_el = item.select_one("p")
                 if not a or not a.get("href"):
@@ -46,8 +52,8 @@ class AhmiaSearcher(BaseSearcher):
                     snippet=desc_el.get_text(strip=True) if desc_el else "",
                     engine=self.name,
                 ))
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[Ahmia] exception: %s", exc, exc_info=True)
         return results
 
 
@@ -60,20 +66,38 @@ class TorchSearcher(BaseSearcher):
     def is_available(self) -> bool:
         return tor_enabled()
 
+    _TORCH_URLS = [
+        "http://xmh57jrknzkhv6y3ls3ubitzfqnkrwxhopf5ayieonly7b7xfgpqzqid.onion/4a1f6b371c/search.cgi",
+        "http://torchdeedp3i2jigzjdmfpn5ttjhthh5wbmda2rr3jvqjg5p77c54dqd.onion/search",
+    ]
+
     def search(self, query: str, max_results: int = 20) -> List[SearchResult]:
         results = []
+        resp = None
+        for url in self._TORCH_URLS:
+            try:
+                resp = request_with_retry(
+                    "GET",
+                    url,
+                    params={"q": query, "cmd": "Search!", "np": "1"},
+                    extra_headers={"Referer": url.rsplit("/", 1)[0] + "/"},
+                    timeout=30,
+                )
+                if resp is not None and resp.status_code < 400:
+                    break
+                logger.debug("[Torch] %s returned %s, trying next", url, getattr(resp, 'status_code', None))
+                resp = None
+            except Exception as exc:
+                logger.debug("[Torch] %s exception: %s", url, exc)
+                resp = None
         try:
-            resp = request_with_retry(
-                "GET",
-                "http://xmh57jrknzkhv6y3ls3ubitzfqnkrwxhopf5ayieonly7b7xfgpqzqid.onion/4a1f6b371c/search.cgi",
-                params={"q": query, "cmd": "Search!", "np": "1"},
-                extra_headers={"Referer": "http://xmh57jrknzkhv6y3ls3ubitzfqnkrwxhopf5ayieonly7b7xfgpqzqid.onion/"},
-                timeout=30,
-            )
             if resp is None or resp.status_code >= 400:
+                logger.debug("[Torch] all URLs failed")
                 return results
             soup = BeautifulSoup(resp.text, "lxml")
-            for item in soup.select("dl dt a, .result a, li a[href^='http']")[:max_results]:
+            items = soup.select("dl dt a, .result a, li a[href^='http']")
+            logger.debug("[Torch] found %d link elements", len(items))
+            for item in items[:max_results]:
                 href = item.get("href", "")
                 if not href.startswith("http"):
                     continue
@@ -86,8 +110,8 @@ class TorchSearcher(BaseSearcher):
                     snippet=snippet[:200],
                     engine=self.name,
                 ))
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[Torch] exception: %s", exc, exc_info=True)
         return results
 
 
@@ -111,6 +135,7 @@ class HaystackSearcher(BaseSearcher):
                 timeout=30,
             )
             if resp is None or resp.status_code >= 400:
+                logger.debug("[Haystack] bad response: %s", getattr(resp, 'status_code', None))
                 return results
             soup = BeautifulSoup(resp.text, "lxml")
             candidates = (
@@ -118,6 +143,7 @@ class HaystackSearcher(BaseSearcher):
                 soup.select("article") or
                 soup.select("li[class]")
             )
+            logger.debug("[Haystack] found %d candidate elements", len(candidates))
             for item in candidates[:max_results]:
                 a = item.select_one("a[href^='http']") or item.select_one("a[href]")
                 desc_el = item.select_one("p, .desc, .snippet")
@@ -132,6 +158,6 @@ class HaystackSearcher(BaseSearcher):
                     snippet=desc_el.get_text(strip=True) if desc_el else "",
                     engine=self.name,
                 ))
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[Haystack] exception: %s", exc, exc_info=True)
         return results

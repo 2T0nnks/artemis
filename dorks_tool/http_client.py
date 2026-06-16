@@ -64,6 +64,7 @@ _ACCEPT_LANGS = [
 # ── Tor state ───────────────────────────────────────────────────────────────
 _tor_proxy: Optional[str] = os.getenv("TOR_PROXY", "").strip() or None
 _request_count: int = 0
+_search_count: int = 0
 _TOR_RENEW_EVERY: int = TOR_RENEW_EVERY_DEFAULT
 _state_lock = threading.Lock()
 
@@ -231,12 +232,6 @@ def request_with_retry(
 
             with _state_lock:
                 _request_count += 1
-                count_snap = _request_count
-                proxy_snap = _tor_proxy
-
-            # Renew Tor circuit periodically
-            if proxy_snap and count_snap % _TOR_RENEW_EVERY == 0:
-                _renew_tor_circuit()
 
             if resp.status_code in (429, 503) and attempt < max_retries:
                 logger.debug("Rate limited (%s), retry %d…", resp.status_code, attempt + 1)
@@ -252,11 +247,28 @@ def request_with_retry(
     return None
 
 
+def notify_search_complete() -> None:
+    """
+    Call once after each full search (all engines done).
+    Renews the Tor circuit every _TOR_RENEW_EVERY searches.
+    """
+    global _search_count
+    with _state_lock:
+        proxy = _tor_proxy
+        _search_count += 1
+        count = _search_count
+        renew_every = _TOR_RENEW_EVERY
+    if proxy and count % renew_every == 0:
+        logger.debug("Renewing Tor circuit after %d searches", count)
+        _renew_tor_circuit()
+
+
 def get_status() -> dict:
     """Return current anti-block status (useful for debug endpoint)."""
     with _state_lock:
         proxy = _tor_proxy
         count = _request_count
+        searches = _search_count
     masked = "socks5://127.0.0.1:****" if proxy else None
     return {
         "tor_enabled": tor_enabled(),
@@ -264,4 +276,5 @@ def get_status() -> dict:
         "ua_pool_size": len(_UA_POOL),
         "fake_useragent": _fua is not None,
         "request_count": count,
+        "search_count": searches,
     }

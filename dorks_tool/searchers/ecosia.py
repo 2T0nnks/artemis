@@ -1,7 +1,10 @@
+import logging
 from bs4 import BeautifulSoup
 from typing import List
 from .base import BaseSearcher, SearchResult
 from ..http_client import request_with_retry
+
+logger = logging.getLogger(__name__)
 
 
 class EcosiaSearcher(BaseSearcher):
@@ -20,6 +23,7 @@ class EcosiaSearcher(BaseSearcher):
                 extra_headers={"Referer": "https://www.ecosia.org/"},
             )
             if resp is None or resp.status_code >= 400:
+                logger.debug("[Ecosia] bad response: %s", getattr(resp, 'status_code', None))
                 return results
             soup = BeautifulSoup(resp.text, "lxml")
             candidates = (
@@ -29,6 +33,7 @@ class EcosiaSearcher(BaseSearcher):
                 soup.select("div[class*='result']") or
                 soup.select("li[class*='result']")
             )
+            logger.debug("[Ecosia] found %d candidate elements", len(candidates))
             for article in candidates[:max_results]:
                 a = (
                     article.select_one("a[data-test-id='mainline-result-title-link']") or
@@ -48,6 +53,6 @@ class EcosiaSearcher(BaseSearcher):
                     snippet=snippet_el.get_text(strip=True) if snippet_el else "",
                     engine=self.name,
                 ))
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[Ecosia] exception: %s", exc, exc_info=True)
         return results
