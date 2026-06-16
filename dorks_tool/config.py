@@ -1,0 +1,12 @@
+"""Central configuration constants for Artemis."""
+
+# Tor
+TOR_PORTS = [9050, 9150]
+TOR_RENEW_EVERY_DEFAULT = 10
+
+# HTTP client
+DEFAULT_MAX_RESULTS = 15
+REQUEST_MIN_DELAY = 0.5
+REQUEST_MAX_DELAY = 2.5
+REQUEST_MAX_RETRIES = 2
+REQUEST_TIMEOUT = 15
