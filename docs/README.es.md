@@ -1,0 +1,119 @@
+```
+    _         _                     _     
+   / \   _ __| |_ ___ _ __ ___  (_)___
+  / _ \ | '__| __/ _ \ '_ ` _ \ | / __|
+ / ___ \| |  | ||  __/ | | | | || \__ \
+/_/   \_\_|   \__\___|_| |_| |_|/ |___/
+                               |__/     
+```
+
+<div align="center">
+
+**Búsqueda precisa. Múltiples motores. Soporte para Tor.**
+
+[![Python](https://img.shields.io/badge/Python-3.10+-7c3aed?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![Flask](https://img.shields.io/badge/Flask-3.0-7c3aed?style=flat-square&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
+[![License](https://img.shields.io/badge/license-MIT-a78bfa?style=flat-square)](LICENSE)
+
+[🇧🇷 Português](../README.md) · [🇺🇸 English](README.en.md) · 🇪🇸 Español · [📖 Wiki](../../wiki)
+
+</div>
+
+---
+
+![Artemis Web UI](screenshot.png)
+
+---
+
+## Instalación
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate        # Windows
+# source .venv/bin/activate   # Linux/Mac
+
+pip install -r requirements.txt
+```
+
+## Configuración (opcional)
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Descripción |
+|---|---|
+| `VIRUSTOTAL_API_KEY` | Verificación de seguridad de URLs |
+| `BRAVE_API_KEY` | Motor Brave Search vía API oficial |
+| `TOR_PROXY` | Ej: `socks5://127.0.0.1:9050` |
+
+Sin ninguna clave, Artemis funciona con 9 motores gratuitos.
+
+---
+
+## Uso
+
+### Web App
+
+```bash
+python artemis.py web
+# → http://127.0.0.1:5000
+```
+
+### CLI
+
+```bash
+python artemis.py search "site:gov.br filetype:pdf"
+python artemis.py search "inurl:login" --engines ddg,bing
+python artemis.py search "intext:password" --vt --max 20
+```
+
+---
+
+## Motores de búsqueda
+
+| Slug | Motor |
+|---|---|
+| `ddghtml` | DuckDuckGo HTML |
+| `bing` | Bing |
+| `google` | Bing Global (en-GB) |
+| `startpage` | Bing (pt-BR) |
+| `ddg` | DuckDuckGo API |
+| `searx` | SearXNG (instancias públicas) |
+| `mojeek` | Mojeek |
+| `ecosia` | Ecosia |
+| `brave` | Brave API *(requiere clave)* |
+
+---
+
+## Tor — rotación de IP
+
+```bash
+python artemis.py tor install   # descarga el bundle oficial en .tor/
+python artemis.py tor start     # inicia en segundo plano
+python artemis.py tor stop      # detiene el proceso
+```
+
+O usa el panel **⚙** junto al badge Tor en la web app para control completo sin CLI.
+
+> El bundle se descarga directamente desde `archive.torproject.org`. No se instala nada en el sistema.
+
+---
+
+## Funcionalidades
+
+- 🔍 **Multi-motor** — 9 motores en paralelo con deduplicación
+- 🛡 **Anti-bloqueo** — rotación de UA, headers aleatorios, reintentos con backoff
+- 🧅 **Tor integrado** — toggle en tiempo real, renovación automática de circuito
+- 📋 **Copiar URL** con un clic
+- 🕒 **Historial de búsquedas** (localStorage, últimas 10)
+- 🔽 **Exportar** resultados en JSON o CSV
+- 🔎 **Filtrar por motor** después de buscar
+- 🛡 **VirusTotal** inline por resultado
+- 🏹 **Constructor de dorks** por categoría (libro, película, música, software...)
+
+---
+
+<div align="center">
+  <sub>By <strong>Tonnks</strong></sub>
+</div>
