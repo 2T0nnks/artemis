@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from ..search import run_search
+from ..searchers import registry as _registry
 from ..searchers.registry import ALL_SEARCHERS, ONION_SLUGS
 from .. import virustotal
 from ..inspector import inspect_url
@@ -12,6 +13,9 @@ from ..dork_builder import CATEGORIES, FORMATS_BY_CATEGORY, PLACEHOLDERS, build_
 from ..http_client import get_status as antiblock_status, set_tor, detect_tor, tor_enabled
 import dorks_tool.http_client as _hc
 from .. import tor_setup
+from .. import engine_manager
+from ..searchers.registry import reload_custom_engines
+from ..searchers.custom import CustomSearcher
 
 
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
@@ -27,13 +31,14 @@ def create_app():
     @app.route("/")
     def index():
         engines = [
-            {"slug": s.slug, "name": s.name, "available": s.is_available()}
-            for s in ALL_SEARCHERS
+            {"slug": s.slug, "name": s.name, "available": s.is_available(),
+             "custom": isinstance(s, CustomSearcher)}
+            for s in _registry.ALL_SEARCHERS
             if s.slug not in ONION_SLUGS
         ]
         onion_engines = [
             {"slug": s.slug, "name": s.name}
-            for s in ALL_SEARCHERS
+            for s in _registry.ALL_SEARCHERS
             if s.slug in ONION_SLUGS
         ]
         vt_enabled = virustotal.is_available()
@@ -148,5 +153,65 @@ def create_app():
             return jsonify({"error": "URL vazia."}), 400
         result = virustotal.check_url(url)
         return jsonify(result)
+
+    # ── Custom Engine CRUD ───────────────────────────────────────────────────
+
+    @app.route("/api/engines/custom", methods=["GET"])
+    def api_engines_list():
+        configs = engine_manager.get_all_configs()
+        return jsonify(configs)
+
+    @app.route("/api/engines/custom", methods=["POST"])
+    def api_engines_add():
+        data = request.get_json(force=True)
+        try:
+            cfg = engine_manager.add_engine(data)
+            reload_custom_engines()
+            return jsonify({"ok": True, "engine": cfg}), 201
+        except ValueError as exc:
+            return jsonify({"ok": False, "error": str(exc)}), 400
+
+    @app.route("/api/engines/custom/<slug>", methods=["PUT"])
+    def api_engines_update(slug):
+        data = request.get_json(force=True)
+        updated = engine_manager.update_engine(slug, data)
+        if updated is None:
+            return jsonify({"ok": False, "error": f"Engine '{slug}' not found."}), 404
+        reload_custom_engines()
+        return jsonify({"ok": True, "engine": updated})
+
+    @app.route("/api/engines/custom/<slug>", methods=["DELETE"])
+    def api_engines_delete(slug):
+        removed = engine_manager.remove_engine(slug)
+        if not removed:
+            return jsonify({"ok": False, "error": f"Engine '{slug}' not found."}), 404
+        reload_custom_engines()
+        return jsonify({"ok": True})
+
+    # ── Health check + Auto-fix ──────────────────────────────────────────────
+
+    @app.route("/api/engines/healthcheck", methods=["POST"])
+    def api_engines_healthcheck_all():
+        data = request.get_json(force=True) or {}
+        target_slug = data.get("slug")
+        targets = [
+            s for s in _registry.ALL_SEARCHERS
+            if isinstance(s, CustomSearcher) and (target_slug is None or s.slug == target_slug)
+        ]
+        if not targets:
+            return jsonify({"results": [], "message": "No custom engines found."})
+        results = [engine_manager.run_health_check(s) for s in targets]
+        reload_custom_engines()
+        return jsonify({"results": results})
+
+    @app.route("/api/engines/healthcheck/<slug>", methods=["POST"])
+    def api_engines_autofix(slug):
+        configs = engine_manager.get_all_configs()
+        cfg = next((c for c in configs if c["slug"] == slug), None)
+        if cfg is None:
+            return jsonify({"ok": False, "error": f"Engine '{slug}' not found."}), 404
+        updated = engine_manager.auto_fix_selectors(cfg)
+        reload_custom_engines()
+        return jsonify({"ok": True, "engine": updated})
 
     return app

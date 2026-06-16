@@ -34,6 +34,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Custom engines config (personal, not versioned)
+dorks_tool/engines.json
+
 # Windsurf / Cascade context (não versionar)
 CONTEXT.md
 .windsurf/

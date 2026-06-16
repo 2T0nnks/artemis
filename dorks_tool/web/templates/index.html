@@ -859,6 +859,118 @@
     }
     .onion-mode-label input { accent-color: #7c3aed; cursor: pointer; }
 
+    /* ── Engine Manager modal ── */
+    #engMgrOverlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+      z-index: 9000; align-items: flex-start; justify-content: flex-end;
+    }
+    #engMgrOverlay.open { display: flex; }
+    #engMgrPanel {
+      width: min(520px, 95vw); height: 100vh; overflow-y: auto;
+      background: #0e0e1a; border-left: 1px solid var(--border-strong);
+      display: flex; flex-direction: column;
+      animation: slideInRight 0.22s ease;
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(60px); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+    .engmgr-header {
+      padding: 22px 22px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .engmgr-header h2 { font-size: 15px; font-weight: 600; }
+    .engmgr-close {
+      background: none; border: none; color: var(--text-muted);
+      font-size: 20px; cursor: pointer; line-height: 1;
+      padding: 2px 6px; border-radius: 6px; transition: color 0.15s, background 0.15s;
+    }
+    .engmgr-close:hover { color: var(--text); background: var(--surface-hover); }
+    .engmgr-tabs { display: flex; border-bottom: 1px solid var(--border); }
+    .engmgr-tab {
+      flex: 1; padding: 10px; text-align: center; font-size: 13px;
+      color: var(--text-muted); cursor: pointer; border: none;
+      background: none; border-bottom: 2px solid transparent; transition: all 0.15s;
+    }
+    .engmgr-tab.active { color: var(--accent-light); border-bottom-color: var(--accent); }
+    .engmgr-body { padding: 18px 22px; flex: 1; }
+    .engmgr-section { display: none; }
+    .engmgr-section.active { display: block; }
+    .eng-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .eng-card-info { flex: 1; min-width: 0; }
+    .eng-card-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .eng-card-url  { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .eng-health {
+      font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+    }
+    .eng-health.ok       { background: rgba(52,211,153,0.15); color: #34d399; }
+    .eng-health.degraded { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+    .eng-health.offline  { background: rgba(248,113,113,0.15); color: #f87171; }
+    .eng-health.builtin  { background: rgba(124,58,237,0.15);  color: #a78bfa; }
+    .eng-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .eng-act-btn {
+      background: var(--surface-hover); border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 11px; padding: 3px 9px;
+      border-radius: 6px; cursor: pointer; transition: all 0.15s;
+    }
+    .eng-act-btn:hover { color: var(--text); border-color: var(--border-strong); }
+    .eng-act-btn.danger:hover { color: #f87171; border-color: rgba(248,113,113,0.4); }
+    .eng-act-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .engmgr-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .engmgr-form-grid .full { grid-column: 1 / -1; }
+    .engmgr-field label {
+      display: block; font-size: 11px; font-weight: 500;
+      color: var(--text-muted); margin-bottom: 5px;
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .engmgr-field input, .engmgr-field select, .engmgr-field textarea {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 13px;
+      padding: 8px 11px; outline: none; font-family: inherit; transition: border-color 0.15s;
+    }
+    .engmgr-field textarea { resize: vertical; min-height: 60px; font-family: monospace; font-size: 12px; }
+    .engmgr-field input:focus, .engmgr-field textarea:focus { border-color: var(--border-focus); }
+    .engmgr-hint {
+      font-size: 11px; color: var(--text-muted); margin-top: 14px;
+      padding: 10px 12px; background: rgba(124,58,237,0.07);
+      border-radius: 8px; border-left: 2px solid var(--accent); line-height: 1.7;
+    }
+    .engmgr-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .engmgr-btn {
+      padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      cursor: pointer; border: none; transition: all 0.15s;
+    }
+    .engmgr-btn.primary { background: var(--accent); color: #fff; }
+    .engmgr-btn.primary:hover { background: #6d28d9; }
+    .engmgr-btn.secondary {
+      background: var(--surface-hover); color: var(--text-muted); border: 1px solid var(--border);
+    }
+    .engmgr-btn.secondary:hover { color: var(--text); }
+    .engmgr-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .engmgr-msg {
+      font-size: 12px; margin-top: 10px; min-height: 16px;
+      padding: 6px 10px; border-radius: 6px; display: none;
+    }
+    .engmgr-msg.ok  { display: block; background: rgba(52,211,153,0.1);  color: #34d399; }
+    .engmgr-msg.err { display: block; background: rgba(248,113,113,0.1); color: #f87171; }
+    .eng-mgr-btn {
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 14px; padding: 5px 10px;
+      border-radius: 8px; cursor: pointer; transition: all 0.15s; user-select: none;
+    }
+    .eng-mgr-btn:hover { color: var(--text); border-color: var(--border-strong); }
+    .engmgr-empty { font-size: 13px; color: var(--text-muted); text-align: center; padding: 30px 0; }
+    .engmgr-section-title {
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px;
+    }
+
     /* ── Status bar ── */
     #statusBar {
       font-size: 12px;
@@ -1226,6 +1338,7 @@
         <span id="torLabel">Tor</span>
       </div>
       <button class="tor-gear-btn" id="torGearBtn" title="Configurações avançadas do Tor">⚙</button>
+      <button class="eng-mgr-btn" id="engMgrBtn" title="Gerenciar engines customizadas">🔌</button>
     </div>
 
     <!-- Tor advanced panel -->
@@ -2316,6 +2429,312 @@
     document.head.appendChild(styleEl);
 
     searchInput.focus();
+  </script>
+
+  <!-- ── Engine Manager Modal ── -->
+  <div id="engMgrOverlay">
+    <div id="engMgrPanel">
+      <div class="engmgr-header">
+        <h2>🔌 Engine Manager</h2>
+        <button class="engmgr-close" id="engMgrClose">✕</button>
+      </div>
+      <div class="engmgr-tabs">
+        <button class="engmgr-tab active" data-tab="list">Engines ativas</button>
+        <button class="engmgr-tab" data-tab="add">Adicionar engine</button>
+      </div>
+      <div class="engmgr-body">
+
+        <!-- Tab: lista -->
+        <div class="engmgr-section active" id="engTabList">
+          <div class="engmgr-section-title">Engines customizadas</div>
+          <div id="engCardList"><div class="engmgr-empty">Nenhuma engine customizada cadastrada.</div></div>
+          <div class="engmgr-actions" style="margin-top:18px;">
+            <button class="engmgr-btn secondary" id="engHealthAllBtn">🩺 Testar todas</button>
+          </div>
+          <div class="engmgr-msg" id="engListMsg"></div>
+
+          <div class="engmgr-section-title" style="margin-top:24px;">Engines builtin</div>
+          <div id="engBuiltinList"></div>
+        </div>
+
+        <!-- Tab: adicionar -->
+        <div class="engmgr-section" id="engTabAdd">
+          <div class="engmgr-form-grid">
+            <div class="engmgr-field">
+              <label>Nome *</label>
+              <input type="text" id="efName" placeholder="Ex: Kagi Search" />
+            </div>
+            <div class="engmgr-field">
+              <label>Slug * <small style="text-transform:none;font-weight:400">(único, sem espaço)</small></label>
+              <input type="text" id="efSlug" placeholder="kagi" />
+            </div>
+            <div class="engmgr-field full">
+              <label>URL de busca *</label>
+              <input type="url" id="efUrl" placeholder="https://kagi.com/search" />
+            </div>
+            <div class="engmgr-field">
+              <label>Método</label>
+              <select id="efMethod">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+              </select>
+            </div>
+            <div class="engmgr-field">
+              <label>Parâmetro da query</label>
+              <input type="text" id="efQueryParam" placeholder="q" value="q" />
+            </div>
+            <div class="engmgr-field full">
+              <label>Parâmetros extras (JSON)</label>
+              <textarea id="efParams" placeholder='{"safe": "off"}'></textarea>
+            </div>
+            <div class="engmgr-field full">
+              <label>Seletor CSS — container do resultado *</label>
+              <input type="text" id="efResultSel" placeholder="div.result, li.result, article" />
+            </div>
+            <div class="engmgr-field full">
+              <label>Seletor CSS — título / link *</label>
+              <input type="text" id="efTitleSel" placeholder="h2 a, .title a, a[href^='http']" />
+            </div>
+            <div class="engmgr-field full">
+              <label>Seletor CSS — snippet <small style="text-transform:none;font-weight:400">(opcional)</small></label>
+              <input type="text" id="efSnippetSel" placeholder="p.desc, .snippet, p" />
+            </div>
+          </div>
+          <div class="engmgr-hint">
+            Use <code>{query}</code> nos parâmetros para o termo de busca. Exemplo de parâmetros:<br>
+            <code>{"q": "{query}", "lang": "pt"}</code><br><br>
+            Dica: não sabe os seletores? Clique em <strong>Salvar e auto-detectar</strong> — o Artemis tentará descobrir automaticamente.
+          </div>
+          <div class="engmgr-actions">
+            <button class="engmgr-btn primary" id="engSaveBtn">💾 Salvar engine</button>
+            <button class="engmgr-btn secondary" id="engSaveAutoBtn">🔍 Salvar e auto-detectar</button>
+            <button class="engmgr-btn secondary" id="engTestBtn">🩺 Testar sem salvar</button>
+          </div>
+          <div class="engmgr-msg" id="engAddMsg"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+  /* ══════════════════════════════════════════
+     ENGINE MANAGER
+  ══════════════════════════════════════════ */
+  (function() {
+    const overlay   = document.getElementById('engMgrOverlay');
+    const closeBtn  = document.getElementById('engMgrClose');
+    const openBtn   = document.getElementById('engMgrBtn');
+    const tabs      = document.querySelectorAll('.engmgr-tab');
+    const sections  = { list: document.getElementById('engTabList'), add: document.getElementById('engTabAdd') };
+    const cardList  = document.getElementById('engCardList');
+    const builtinList = document.getElementById('engBuiltinList');
+    const listMsg   = document.getElementById('engListMsg');
+    const addMsg    = document.getElementById('engAddMsg');
+
+    /* ── open / close ── */
+    openBtn.addEventListener('click', () => { overlay.classList.add('open'); loadEngines(); loadBuiltin(); });
+    closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+
+    /* ── tabs ── */
+    tabs.forEach(t => t.addEventListener('click', () => {
+      tabs.forEach(x => x.classList.remove('active'));
+      Object.values(sections).forEach(s => s.classList.remove('active'));
+      t.classList.add('active');
+      sections[t.dataset.tab].classList.add('active');
+    }));
+
+    /* ── helpers ── */
+    function showMsg(el, text, type) {
+      el.textContent = text; el.className = 'engmgr-msg ' + type;
+      setTimeout(() => { el.className = 'engmgr-msg'; }, 4000);
+    }
+
+    function healthBadge(h) {
+      const map = { ok: ['ok','✅ ok'], degraded: ['degraded','⚠ degraded'], offline: ['offline','🔴 offline'] };
+      const [cls, label] = map[h] || ['degraded','? unknown'];
+      return `<span class="eng-health ${cls}">${label}</span>`;
+    }
+
+    /* ── load custom engines ── */
+    async function loadEngines() {
+      cardList.innerHTML = '<div class="engmgr-empty" style="opacity:0.5">Carregando…</div>';
+      try {
+        const r = await fetch('/api/engines/custom');
+        const data = await r.json();
+        if (!data.length) { cardList.innerHTML = '<div class="engmgr-empty">Nenhuma engine customizada cadastrada.</div>'; return; }
+        cardList.innerHTML = '';
+        data.forEach(cfg => cardList.appendChild(buildCard(cfg)));
+      } catch { cardList.innerHTML = '<div class="engmgr-empty" style="color:var(--red)">Erro ao carregar engines.</div>'; }
+    }
+
+    function buildCard(cfg) {
+      const div = document.createElement('div');
+      div.className = 'eng-card';
+      div.dataset.slug = cfg.slug;
+      div.innerHTML = `
+        <div class="eng-card-info">
+          <div class="eng-card-name">${esc(cfg.name)}</div>
+          <div class="eng-card-url">${esc(cfg.url)}</div>
+        </div>
+        ${healthBadge(cfg.health || 'ok')}
+        <div class="eng-actions">
+          <button class="eng-act-btn btn-test" title="Testar + auto-fix">🩺</button>
+          <button class="eng-act-btn btn-toggle">${cfg.enabled ? 'Desativar' : 'Ativar'}</button>
+          <button class="eng-act-btn danger btn-del">Remover</button>
+        </div>`;
+
+      div.querySelector('.btn-test').addEventListener('click', async () => {
+        const btn = div.querySelector('.btn-test');
+        btn.disabled = true; btn.textContent = '…';
+        try {
+          const r = await fetch(`/api/engines/healthcheck/${cfg.slug}`, { method:'POST' });
+          const d = await r.json();
+          const hspan = div.querySelector('.eng-health');
+          hspan.outerHTML = healthBadge(d.engine?.health || 'degraded');
+          showMsg(listMsg, `${cfg.name}: ${d.engine?.health || 'sem resposta'} — seletores ${d.ok ? 'atualizados' : 'sem mudança'}`, d.ok ? 'ok' : 'err');
+        } catch { showMsg(listMsg, 'Erro ao testar engine.', 'err'); }
+        btn.disabled = false; btn.textContent = '🩺';
+        loadEngines();
+      });
+
+      div.querySelector('.btn-toggle').addEventListener('click', async () => {
+        await fetch(`/api/engines/custom/${cfg.slug}`, {
+          method: 'PUT',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ enabled: !cfg.enabled })
+        });
+        loadEngines();
+      });
+
+      div.querySelector('.btn-del').addEventListener('click', async () => {
+        if (!confirm(`Remover engine "${cfg.name}"?`)) return;
+        await fetch(`/api/engines/custom/${cfg.slug}`, { method: 'DELETE' });
+        loadEngines();
+      });
+
+      return div;
+    }
+
+    /* ── load builtin engines ── */
+    function loadBuiltin() {
+      const pills = document.querySelectorAll('#enginesRow .pill');
+      builtinList.innerHTML = '';
+      pills.forEach(p => {
+        const d = document.createElement('div');
+        d.className = 'eng-card';
+        d.innerHTML = `<div class="eng-card-info"><div class="eng-card-name">${esc(p.textContent.trim())}</div><div class="eng-card-url">${p.dataset.slug}</div></div><span class="eng-health builtin">builtin</span>`;
+        builtinList.appendChild(d);
+      });
+    }
+
+    /* ── health check all ── */
+    document.getElementById('engHealthAllBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('engHealthAllBtn');
+      btn.disabled = true; btn.textContent = '…';
+      try {
+        const r = await fetch('/api/engines/healthcheck', { method:'POST', headers:{'Content-Type':'application/json'}, body: '{}' });
+        const d = await r.json();
+        const n = d.results?.length || 0;
+        const ok = d.results?.filter(x => x.status === 'ok').length || 0;
+        showMsg(listMsg, `Health check: ${ok}/${n} ok`, ok === n ? 'ok' : 'err');
+      } catch { showMsg(listMsg, 'Erro no health check.', 'err'); }
+      btn.disabled = false; btn.textContent = '🩺 Testar todas';
+      loadEngines();
+    });
+
+    /* ── add engine ── */
+    function collectForm() {
+      const qp = document.getElementById('efQueryParam').value.trim() || 'q';
+      let extra = {};
+      try { extra = JSON.parse(document.getElementById('efParams').value || '{}'); } catch {}
+      const params = { [qp]: '{query}', ...extra };
+      return {
+        slug: document.getElementById('efSlug').value.trim(),
+        name: document.getElementById('efName').value.trim(),
+        url: document.getElementById('efUrl').value.trim(),
+        method: document.getElementById('efMethod').value,
+        params,
+        result_selector: document.getElementById('efResultSel').value.trim(),
+        title_selector: document.getElementById('efTitleSel').value.trim(),
+        snippet_selector: document.getElementById('efSnippetSel').value.trim(),
+      };
+    }
+
+    async function saveEngine(autoFix) {
+      const cfg = collectForm();
+      if (!cfg.slug || !cfg.name || !cfg.url) { showMsg(addMsg, 'Preencha slug, nome e URL.', 'err'); return null; }
+      const r = await fetch('/api/engines/custom', {
+        method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cfg)
+      });
+      const d = await r.json();
+      if (!d.ok) { showMsg(addMsg, d.error || 'Erro ao salvar.', 'err'); return null; }
+      return d.engine;
+    }
+
+    document.getElementById('engSaveBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('engSaveBtn');
+      btn.disabled = true;
+      const eng = await saveEngine(false);
+      if (eng) { showMsg(addMsg, `Engine "${eng.name}" salva com sucesso!`, 'ok'); loadEngines(); }
+      btn.disabled = false;
+    });
+
+    document.getElementById('engSaveAutoBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('engSaveAutoBtn');
+      btn.disabled = true; btn.textContent = '⏳ Detectando…';
+      const eng = await saveEngine(false);
+      if (eng) {
+        try {
+          const r = await fetch(`/api/engines/healthcheck/${eng.slug}`, { method: 'POST' });
+          const d = await r.json();
+          const h = d.engine?.health || 'degraded';
+          const rs = d.engine?.result_selector || eng.result_selector;
+          showMsg(addMsg, `Auto-detect: health=${h} · result_selector="${rs}"`, h === 'ok' ? 'ok' : 'err');
+          loadEngines();
+        } catch { showMsg(addMsg, 'Engine salva, mas auto-detect falhou.', 'err'); }
+      }
+      btn.disabled = false; btn.textContent = '🔍 Salvar e auto-detectar';
+    });
+
+    document.getElementById('engTestBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('engTestBtn');
+      const cfg = collectForm();
+      if (!cfg.slug || !cfg.url) { showMsg(addMsg, 'Preencha ao menos slug e URL para testar.', 'err'); return; }
+      btn.disabled = true; btn.textContent = '⏳ Testando…';
+
+      // Use a temporary slug prefixed with _tmp_ so cleanup is unambiguous
+      const tmpSlug = '_tmp_' + cfg.slug.replace(/[^a-z0-9_-]/g, '') + '_' + Date.now();
+      const tmpCfg = { ...cfg, slug: tmpSlug,
+        result_selector: cfg.result_selector || 'div',
+        title_selector:  cfg.title_selector  || 'a' };
+
+      const addR = await fetch('/api/engines/custom', {
+        method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(tmpCfg)
+      });
+      const addD = await addR.json();
+      if (!addD.ok) { showMsg(addMsg, addD.error || 'Erro ao criar entrada temporária.', 'err'); btn.disabled = false; btn.textContent = '🩺 Testar sem salvar'; return; }
+
+      try {
+        const r = await fetch(`/api/engines/healthcheck/${tmpSlug}`, { method: 'POST' });
+        const d = await r.json();
+        const h = d.engine?.health || 'degraded';
+        const rs = d.engine?.result_selector || cfg.result_selector || '—';
+        showMsg(addMsg, `Resultado: health=${h} · result_selector="${rs}"`, h === 'ok' ? 'ok' : 'err');
+        if (d.engine?.result_selector) document.getElementById('efResultSel').value = d.engine.result_selector;
+        if (d.engine?.title_selector)  document.getElementById('efTitleSel').value  = d.engine.title_selector;
+        if (d.engine?.snippet_selector) document.getElementById('efSnippetSel').value = d.engine.snippet_selector;
+      } catch { showMsg(addMsg, 'Teste falhou.', 'err'); }
+      finally {
+        // Always clean up — even if browser tab closes mid-flight this runs
+        await fetch(`/api/engines/custom/${tmpSlug}`, { method: 'DELETE' }).catch(() => {});
+        btn.disabled = false; btn.textContent = '🩺 Testar sem salvar';
+      }
+    });
+
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  })();
   </script>
 </body>
 </html>
