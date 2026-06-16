@@ -47,7 +47,7 @@ cp .env.example .env
 | `BRAVE_API_KEY` | Brave Search via official API |
 | `TOR_PROXY` | e.g. `socks5://127.0.0.1:9050` |
 
-No keys needed — Artemis works out of the box with 9 free engines.
+No keys needed — Artemis works out of the box with 10 free engines.
 
 ---
 
@@ -72,6 +72,7 @@ python artemis.py search "intext:password" --vt --max 20
 
 ## Engines
 
+### Surface Web
 | Slug | Engine |
 |---|---|
 | `ddghtml` | DuckDuckGo HTML |
@@ -79,14 +80,22 @@ python artemis.py search "intext:password" --vt --max 20
 | `google` | Bing Global (en-GB) |
 | `startpage` | Bing (pt-BR) |
 | `ddg` | DuckDuckGo API |
-| `searx` | SearXNG (public instances) |
+| `searx` | SearXNG (public instances, shuffled order) |
 | `mojeek` | Mojeek |
 | `ecosia` | Ecosia |
+| `brave_html` | Brave Search (scraper) |
 | `brave` | Brave API *(requires key)* |
+
+### Tor Network .onion *(requires Tor active)*
+| Slug | Engine | Description |
+|---|---|---|
+| `ahmia` | Ahmia | Most maintained dark web index |
+| `torch` | Torch | Pioneer, large link volume |
+| `haystack` | Haystack | Privacy-focused |
 
 ---
 
-## Tor — IP rotation
+## Tor — bypass & dark web
 
 ```bash
 python artemis.py tor install   # downloads official bundle into .tor/
@@ -96,21 +105,26 @@ python artemis.py tor stop      # stops the process
 
 Or use the **⚙** panel next to the Tor badge in the web app for full control without CLI.
 
+Tor serves **two purposes**:
+- **Bypass** — IP rotation via exit nodes, avoids rate-limiting on normal engines
+- **Dark web** — direct access to `.onion` engines (Ahmia, Torch, Haystack) via the Tor network
+
 > Bundle downloaded directly from `archive.torproject.org`. Nothing is installed on your system.
 
 ---
 
 ## Features
 
-- 🔍 **Multi-engine** — 9 parallel engines with deduplication
+- 🔍 **Multi-engine** — 10 parallel engines with deduplication
 - 🛡 **Anti-block** — UA rotation, randomized headers, retry with exponential backoff
-- 🧅 **Tor integration** — real-time toggle, automatic circuit renewal
+- 🧅 **Tor dual-mode** — scraping bypass + dark web search (Ahmia, Torch, Haystack)
 - 📋 **One-click copy URL** per result
 - 🕒 **Search history** (localStorage, last 10)
 - 🔽 **Export** results as JSON or CSV
-- 🔎 **Filter by engine** after search
+- 🔎 **Filter by engine** after search (including exclusive 🧅 Onion filter)
 - 🛡 **VirusTotal** inline check per result
-- 🏹 **Dork builder** by category (book, movie, music, software...)
+- 🏹 **Dork builder** with extra operators (`site:`, `before:`, `after:`), color-coded preview
+- 🎯 **Target sites** — extra operators field in advanced panel
 
 ---
 

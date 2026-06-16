@@ -47,7 +47,7 @@ cp .env.example .env
 | `BRAVE_API_KEY` | Motor Brave Search vía API oficial |
 | `TOR_PROXY` | Ej: `socks5://127.0.0.1:9050` |
 
-Sin ninguna clave, Artemis funciona con 9 motores gratuitos.
+Sin ninguna clave, Artemis funciona con 10 motores gratuitos.
 
 ---
 
@@ -72,6 +72,7 @@ python artemis.py search "intext:password" --vt --max 20
 
 ## Motores de búsqueda
 
+### Surface Web
 | Slug | Motor |
 |---|---|
 | `ddghtml` | DuckDuckGo HTML |
@@ -79,14 +80,22 @@ python artemis.py search "intext:password" --vt --max 20
 | `google` | Bing Global (en-GB) |
 | `startpage` | Bing (pt-BR) |
 | `ddg` | DuckDuckGo API |
-| `searx` | SearXNG (instancias públicas) |
+| `searx` | SearXNG (instancias públicas, orden aleatorio) |
 | `mojeek` | Mojeek |
 | `ecosia` | Ecosia |
+| `brave_html` | Brave Search (scraper) |
 | `brave` | Brave API *(requiere clave)* |
+
+### Red .onion *(requiere Tor activo)*
+| Slug | Motor | Descripción |
+|---|---|---|
+| `ahmia` | Ahmia | Índice más actualizado de la dark web |
+| `torch` | Torch | Pionero, gran volumen de enlaces |
+| `haystack` | Haystack | Enfocado en privacidad |
 
 ---
 
-## Tor — rotación de IP
+## Tor — bypass y dark web
 
 ```bash
 python artemis.py tor install   # descarga el bundle oficial en .tor/
@@ -96,21 +105,26 @@ python artemis.py tor stop      # detiene el proceso
 
 O usa el panel **⚙** junto al badge Tor en la web app para control completo sin CLI.
 
+Tor sirve para **dos cosas**:
+- **Bypass** — rotación de IP vía exit nodes, evita rate-limiting en motores normales
+- **Dark web** — acceso directo a motores `.onion` (Ahmia, Torch, Haystack) vía la red Tor
+
 > El bundle se descarga directamente desde `archive.torproject.org`. No se instala nada en el sistema.
 
 ---
 
 ## Funcionalidades
 
-- 🔍 **Multi-motor** — 9 motores en paralelo con deduplicación
+- 🔍 **Multi-motor** — 10 motores en paralelo con deduplicación
 - 🛡 **Anti-bloqueo** — rotación de UA, headers aleatorios, reintentos con backoff
-- 🧅 **Tor integrado** — toggle en tiempo real, renovación automática de circuito
+- 🧅 **Tor modo dual** — bypass de scraping + búsqueda en dark web (Ahmia, Torch, Haystack)
 - 📋 **Copiar URL** con un clic
 - 🕒 **Historial de búsquedas** (localStorage, últimas 10)
 - 🔽 **Exportar** resultados en JSON o CSV
-- 🔎 **Filtrar por motor** después de buscar
+- 🔎 **Filtrar por motor** después de buscar (incluye filtro exclusivo 🧅 Onion)
 - 🛡 **VirusTotal** inline por resultado
-- 🏹 **Constructor de dorks** por categoría (libro, película, música, software...)
+- 🏹 **Constructor de dorks** con operadores extra (`site:`, `before:`, `after:`), preview coloreado
+- 🎯 **Sitios objetivo** — campo de operadores extra en panel avanzado
 
 ---
 
