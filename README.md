@@ -21,7 +21,7 @@
 
 ---
 
-![Artemis Web UI](docs/screenshot.png)
+![Artemis Web UI](docs/artemis.jpeg)
 
 ---
 
